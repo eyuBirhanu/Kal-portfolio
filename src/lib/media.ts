@@ -16,6 +16,15 @@ type TransformOpts = {
   crop?: "fill" | "limit";
   /** Override automatic quality, e.g. 80. */
   quality?: number | "auto";
+  /**
+   * Delivery format. Defaults to `auto`, which negotiates WebP/AVIF off the
+   * browser's Accept header — right for everything a real browser renders.
+   *
+   * Social scrapers are the exception. They send generic Accept headers and
+   * their format support is inconsistent and badly documented, so an OG image
+   * behind f_auto is a coin flip. Pass "jpg" for anything a crawler reads.
+   */
+  format?: "auto" | "jpg" | "png";
 };
 
 /**
@@ -27,9 +36,9 @@ export function cld(url: string, opts: TransformOpts = {}): string {
   if (!match) return url;
 
   const [, base, rest] = match;
-  const { width, height, crop = "limit", quality = "auto" } = opts;
+  const { width, height, crop = "limit", quality = "auto", format = "auto" } = opts;
 
-  const parts = ["f_auto", `q_${quality}`];
+  const parts = [`f_${format}`, `q_${quality}`];
   if (width) parts.push(`w_${width}`);
   if (height) parts.push(`h_${height}`);
   if (width || height) parts.push(`c_${crop}`);
@@ -63,6 +72,9 @@ export function cldVideoPoster(videoUrl: string, width = 1600): string {
   const cleaned = rest.replace(/^[a-z]{1,3}_[^/]*\//, "").replace(/\.(mp4|webm|mov)$/i, ".jpg");
   return `${base}/f_auto,q_auto,w_${width}/${cleaned}`;
 }
+
+/** True when a URL will actually be rewritten by `cld`. */
+export const isCloudinary = (url: string) => CLOUDINARY.test(url);
 
 // ── YouTube ──────────────────────────────────────────────────────────────────
 

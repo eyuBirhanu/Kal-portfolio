@@ -88,13 +88,29 @@ export function Nav() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            {/*
+              Solid, not accent.
+
+              Two problems with the yellow fill here. The colour token is the
+              same #FFC800 in both themes, so on the cream ground the button
+              sat at barely 1.5:1 against the page behind it and read as a
+              highlighter smear rather than a control; on the dark ground it
+              was the loudest thing on screen, competing with the work.
+
+              `solid` is built from the fg/bg tokens, so it inverts with the
+              theme and holds ~16:1 separation in both. The accent still does
+              its job three inches away, on the active nav link.
+
+              The ↗ is gone too: it says "leaves this site", and this is an
+              in-page anchor.
+            */}
             <ButtonLink
               to="/#contact"
-              variant="accent"
+              variant="solid"
               size="sm"
-              className="hidden h-9 min-h-0 px-4 text-nav sm:inline-flex"
+              className="hidden h-9 min-h-0 px-5 text-nav sm:inline-flex"
             >
-              Contact <span aria-hidden>↗</span>
+              Contact
             </ButtonLink>
 
             <button

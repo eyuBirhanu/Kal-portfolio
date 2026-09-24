@@ -1,9 +1,8 @@
 // src/components/home/ContactSection.tsx
 import profile from "../../data/profile.json";
 import { Meta } from "../primitives/Meta";
-import { CopyButton } from "../primitives/CopyButton";
-import { ButtonExternal } from "../primitives/Button";
 import { SectionHeader } from "../primitives/SectionHeader";
+import { isRemoteHref } from "../../lib/links";
 
 type Channel = {
   id: string;
@@ -15,23 +14,31 @@ type Channel = {
 };
 
 /**
- * No form. A freelance creative's inbound comes through Telegram, WhatsApp and
- * email — a form is the least likely path that audience takes, and every field
- * is friction on the one action this whole page exists to produce.
+ * One action, not seven.
  *
- * Structure: email as one full-width row (it's the address people copy), then
- * ONE uniform grid for everything else. An earlier version split primary and
- * secondary channels into two grids, which left Telegram sitting alone in a
- * two-column row whenever WhatsApp had no number set.
+ * This used to render a copy button, an email card and a grid of channel
+ * cards for Telegram, LinkedIn and YouTube — every one of which is already a
+ * link in the footer, further down the same page. Repeating them didn't give
+ * anyone a second way to get in touch; it spread one decision across five
+ * controls and made the closing section of the site look like a settings
+ * screen.
  *
- * Channels with a null url are dropped, so WhatsApp appears the moment a
- * number is added and stays hidden until then.
+ * What's left: the address, big enough to read and to be the thing you click,
+ * and two quiet links under it. Telegram and YouTube still live in the
+ * footer, which is where a secondary channel belongs.
+ *
+ * The address stays as plain selectable text inside the mailto, deliberately.
+ * That was the copy button's whole justification — mailto: does nothing for
+ * someone on webmail with no handler registered, and if the address is only
+ * ever an href they leave with nothing. Showing the characters means they can
+ * select them by hand. It just doesn't need its own control to do that.
  */
 export function ContactSection() {
-  const channels = (profile.channels as Channel[]).filter(
-    (c) => c.url && c.id !== "email"
-  );
+  const channels = profile.channels as Channel[];
+  const linkedin = channels.find((c) => c.id === "linkedin" && c.url);
   const mailto = `mailto:${profile.email}?subject=${encodeURIComponent("Project enquiry")}`;
+  const cvRemote = isRemoteHref(profile.resumeUrl);
+  const cvLabel = cvRemote ? "View CV" : "Download CV";
 
   return (
     <section id="contact" className="scroll-mt-24 border-t border-line px-6 py-section-lg">
@@ -54,55 +61,55 @@ export function ContactSection() {
           </span>
         </div>
 
-        {/* The address, shown rather than hidden behind a mailto that may not
-            resolve on webmail. Mono at body size — display size overflowed on
-            phones. `break-all` keeps a long address inside the card. */}
-        <div className="flex w-full flex-col gap-4 rounded-card border border-line-strong bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
-          <span className="flex min-w-0 flex-col gap-1.5">
-            <Meta tone="accent">Email</Meta>
-            <a
-              href={mailto}
-              className="break-all font-mono text-body-sm text-fg transition-colors hover:text-accent-ink sm:text-body"
-            >
-              {profile.email}
-            </a>
+        {/* The point of the section. Mono, large, and the only thing here
+            carrying any visual weight. `break-all` keeps a long address
+            inside the column on a narrow phone. */}
+        <a href={mailto} className="group flex flex-col items-center gap-2 text-center">
+          <span className="break-all font-mono text-body-lg text-fg underline decoration-line-strong decoration-1 underline-offset-[6px] transition-colors group-hover:text-accent-ink group-hover:decoration-accent sm:text-display-xs">
+            {profile.email}
           </span>
-          <CopyButton value={profile.email} label="email address" className="self-start sm:self-auto" />
-        </div>
+          <Meta tone="subtle">Write to me</Meta>
+        </a>
 
-        {/* One grid, uniform cards, no orphan row */}
-        <ul className="grid w-full gap-3 sm:grid-cols-2">
-          {channels.map((c) => (
-            <li key={c.id}>
-              <a
-                href={c.url!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex h-full items-center justify-between gap-4 rounded-card border border-line px-5 py-4 transition-colors hover:border-line-strong hover:bg-card"
+        {/* Secondary, and styled to stay that way. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+          {linkedin && (
+            <a
+              href={linkedin.url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2"
+            >
+              <Meta tone="muted" className="transition-colors group-hover:text-accent-ink">
+                LinkedIn
+              </Meta>
+              <span
+                aria-hidden
+                className="text-fg-subtle transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:text-accent-ink"
               >
-                <span className="flex min-w-0 flex-col gap-1">
-                  <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-display text-body font-bold text-fg">{c.name}</span>
-                    {c.handle && <Meta>{c.handle}</Meta>}
-                  </span>
-                  <span className="text-body-sm text-fg-muted">{c.purpose}</span>
-                </span>
-                <span
-                  aria-hidden
-                  className="flex size-9 shrink-0 items-center justify-center rounded-pill border border-line text-fg-subtle transition-colors duration-300 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M7 17 17 7M9 7h8v8" />
-                  </svg>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
+                ↗
+              </span>
+            </a>
+          )}
 
-        <ButtonExternal href={profile.resumeUrl} download>
-          Download CV
-        </ButtonExternal>
+          <a
+            href={profile.resumeUrl}
+            {...(cvRemote
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : { download: true })}
+            className="group inline-flex items-center gap-2"
+          >
+            <Meta tone="muted" className="transition-colors group-hover:text-accent-ink">
+              {cvLabel}
+            </Meta>
+            <span
+              aria-hidden
+              className="text-fg-subtle transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:text-accent-ink"
+            >
+              {cvRemote ? "↗" : "↓"}
+            </span>
+          </a>
+        </div>
       </div>
     </section>
   );

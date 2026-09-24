@@ -5,6 +5,7 @@ import { Meta } from "../primitives/Meta";
 import { ButtonLink, ButtonExternal } from "../primitives/Button";
 import { HoverPreview } from "../primitives/HoverPreview";
 import { useHoverPreview } from "../../hooks/useHoverPreview";
+import { isRemoteHref } from "../../lib/links";
 import { cld } from "../../lib/media";
 
 /**
@@ -27,6 +28,19 @@ export function Hero() {
 
   const portrait = profile.portraitUrl as string | null;
   const preview = useHoverPreview<string>();
+
+  // Homepage only. ProjectList passes no size, so the archive's landscape
+  // 300x200 card is untouched by anything here.
+  //
+  // Sized up to sit against the hero name, which is now 160px tall on
+  // desktop — the old 240x300 read as a thumbnail next to it. 4:5 portrait.
+  // To tune, change these two numbers; the Cloudinary request follows.
+  const PREVIEW_W = 320;
+  const PREVIEW_H = 400;
+
+  // A Drive link opens; a file in /public downloads. The word follows the
+  // behaviour rather than the other way round.
+  const cvLabel = isRemoteHref(profile.resumeUrl) ? "View CV" : "Download CV";
 
   return (
     <section className="relative isolate flex min-h-[92svh] items-center overflow-hidden pt-24 pb-16">
@@ -92,7 +106,7 @@ export function Hero() {
               See the work <span aria-hidden>↗</span>
             </ButtonLink>
             <ButtonExternal href={profile.resumeUrl} download>
-              Download CV
+              {cvLabel}
             </ButtonExternal>
           </div>
         </div>
@@ -100,10 +114,20 @@ export function Hero() {
 
       {/* Portrait-shaped rather than the landscape card the list view uses. */}
       <HoverPreview
-        src={preview.active ? cld(preview.active, { width: 480, height: 600, crop: "fill" }) : null}
+        // Requested at 2x for retina, and cropped with g_auto so the crop
+        // centres on the face rather than the middle of the frame.
+        src={
+          preview.active
+            ? cld(preview.active, {
+                width: PREVIEW_W * 2,
+                height: PREVIEW_H * 2,
+                crop: "fill",
+              })
+            : null
+        }
         nodeRef={preview.nodeRef}
-        width={240}
-        height={300}
+        width={PREVIEW_W}
+        height={PREVIEW_H}
       />
     </section>
   );

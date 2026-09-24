@@ -1,7 +1,8 @@
 // src/components/primitives/Pill.tsx
 import { cn } from "../../lib/cn";
 
-/** Static tag chip — tools, categories, tags. */
+/** Static tag chip — tools, categories, tags. Decorative, so it keeps the
+ *  quiet hairline: nothing here is clickable, and 1.4.11 doesn't apply. */
 export function Pill({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <span
@@ -16,7 +17,14 @@ export function Pill({ children, className }: { children: React.ReactNode; class
   );
 }
 
-/** Selectable filter chip. A real <button> with aria-pressed, not a div. */
+/**
+ * Selectable filter chip. A real <button> with aria-pressed, not a div.
+ *
+ * The unselected state is where contrast actually matters: it's the one that
+ * has to read as a control at all. Its border moves to line-control (3:1) and
+ * its label rides the corrected fg-subtle, so an unselected filter is no
+ * longer a grey word floating on a grey hairline.
+ */
 export function TogglePill({
   active,
   children,
@@ -32,7 +40,7 @@ export function TogglePill({
         "transition-colors duration-200 ease-out",
         active
           ? "bg-accent text-on-accent"
-          : "border border-line text-fg-subtle hover:border-line-strong hover:text-fg",
+          : "border border-line-control text-fg-subtle hover:border-fg hover:text-fg",
         className
       )}
       {...props}

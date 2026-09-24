@@ -1,6 +1,7 @@
 // src/components/primitives/Button.tsx
 import { Link } from "react-router-dom";
 import { cn } from "../../lib/cn";
+import { isRemoteHref } from "../../lib/links";
 
 type Variant = "solid" | "outline" | "accent";
 type Size = "sm" | "md";
@@ -13,9 +14,21 @@ const base =
 
 const variants: Record<Variant, string> = {
   // Cream/near-black fill. The primary action.
+  //
+  // Built from fg/bg rather than a fixed colour, so it inverts with the
+  // theme: a cream pill on the dark ground, a near-black pill on the cream
+  // one. Both sit at roughly 16:1 against the page, which is why this is the
+  // right variant for a header CTA and the accent fill is not.
   solid: "bg-fg text-bg hover:bg-fg/85",
-  outline: "border border-line-strong text-fg hover:border-fg hover:bg-fg/5",
-  // Bright yellow in BOTH themes — safe because the text on it is on-accent.
+  // line-control, not line-strong: a button's border is what identifies it as
+  // a control, so it needs 3:1 against the page. line-strong measures 1.55:1
+  // in dark and 1.59:1 in light — fine for a divider, not for an edge that
+  // has to say "this is clickable".
+  outline: "border border-line-control text-fg hover:border-fg hover:bg-fg/5",
+  // Bright yellow in BOTH themes. The text on it is on-accent so it always
+  // reads, but the FILL barely separates from the cream ground in light mode
+  // — keep this for moments that genuinely want to shout, not for standing
+  // furniture like the nav.
   accent: "bg-accent text-on-accent hover:bg-accent-hover",
 };
 
@@ -50,7 +63,16 @@ export function ButtonLink({
   );
 }
 
-/** External links get the arrow and the security rel the old build omitted. */
+/**
+ * External links get the arrow and the security rel the old build omitted.
+ *
+ * `download` is honoured only for a same-origin href. Browsers ignore the
+ * attribute cross-origin, so asking for it on a Drive or Dropbox URL used to
+ * produce a link that neither downloaded nor opened in a new tab — it just
+ * navigated the page away. Here that case falls back to a new tab and the ↗
+ * glyph, which is what actually happens, so the label never promises
+ * something the browser won't do.
+ */
 export function ButtonExternal({
   href,
   variant = "outline",
@@ -59,16 +81,18 @@ export function ButtonExternal({
   children,
   download,
 }: Common & { href: string; download?: boolean }) {
+  const canDownload = Boolean(download) && !isRemoteHref(href);
+
   return (
     <a
       href={href}
-      target={download ? undefined : "_blank"}
+      target={canDownload ? undefined : "_blank"}
       rel="noopener noreferrer"
-      download={download}
+      download={canDownload || undefined}
       className={cn(base, variants[variant], sizes[size], className)}
     >
       {children}
-      <span aria-hidden>{download ? "↓" : "↗"}</span>
+      <span aria-hidden>{canDownload ? "↓" : "↗"}</span>
     </a>
   );
 }

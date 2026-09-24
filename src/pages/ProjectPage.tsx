@@ -32,8 +32,7 @@ import { Meta } from "../components/primitives/Meta";
 import { Pill } from "../components/primitives/Pill";
 import { ButtonExternal } from "../components/primitives/Button";
 import NotFoundPage from "./NotFoundPage";
-import { Seo, creativeWorkJsonLd } from "../lib/seo";
-import { cld } from "../lib/media";
+import { Seo, creativeWorkJsonLd, ogImage } from "../lib/seo";
 
 export default function ProjectPage() {
   const { slug = "" } = useParams();
@@ -54,7 +53,11 @@ export default function ProjectPage() {
           project.summary ||
           `${project.title} — ${project.client?.name ?? "project"}, ${project.year}.`
         }
-        image={cld(project.thumbnail.url, { width: 1200, height: 630, crop: "fill" })}
+        // Shared helper rather than an inline cld() call, so the forced JPEG
+        // and the 1200x630 box can never drift from the width/height hints
+        // the meta tags advertise.
+        image={ogImage(project.thumbnail.url)}
+        imageAlt={`${project.title}${project.client ? ` for ${project.client.name}` : ""}`}
         path={`/works/${project.slug}`}
         type="article"
         jsonLd={creativeWorkJsonLd(project)}

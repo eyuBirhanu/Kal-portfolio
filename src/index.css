@@ -61,6 +61,12 @@
    rather than a different token value. Used sparingly. */
 @custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
 
+/* True only where a real cursor can hover. Anything behind `hoverable:` is
+   opt-IN, so a touch device gets the un-hovered state and never the hidden
+   one — which is the whole reason the About rows can collapse on hover
+   without becoming unreadable on a phone. */
+@custom-variant hoverable (@media (hover: hover) and (pointer: fine));
+
 /* ── Dark: the default, and the brand ─────────────────────────────────────
  * Warm near-black, not #000. Cream text, not #fff. That single choice is the
  * difference between "expensive" and "template".
@@ -75,10 +81,19 @@
   --color-card: #221e18;
   --color-line: #2a251e;
   --color-line-strong: #3a3329;
+  /* Interactive boundaries only — button and input edges, where WCAG 1.4.11
+     wants 3:1 because the border is what identifies the control. Measured
+     3.02:1 on card, 3.51:1 on bg. Decorative hairlines stay on --color-line;
+     holding every divider to 3:1 would turn a quiet page into a grid. */
+  --color-line-control: #756753;
 
   --color-fg: #f2ede3; /* cream     ~16:1 on bg */
   --color-fg-muted: #a8a093; /* body      ~7:1  */
-  --color-fg-subtle: #7a7264; /* metadata  ~4.5:1 */
+  /* Measured, not estimated. The old #7a7264 was 4.05:1 on bg, 3.76:1 on
+     surface and 3.49:1 on card — every Meta label in the site failed 4.5:1,
+     and it fails hardest on cards, where most of them sit. Now 5.29 / 4.90 /
+     4.55:1. */
+  --color-fg-subtle: #8e8575;
 
   /* Fills, both themes. Safe as TEXT in dark mode only. */
   --color-accent: #ffc800;
@@ -114,15 +129,32 @@
   --text-display-lg: clamp(2.75rem, 6vw, 4.5rem);
   --text-display-lg--line-height: 1.02;
   --text-display-lg--letter-spacing: -0.035em;
-  --text-display-xl: clamp(3rem, 9vw, 6.5rem);
-  --text-display-xl--line-height: 0.94;
-  --text-display-xl--letter-spacing: -0.045em;
+  /* The hero name, and nothing else in the site — `text-display-xl` has
+     exactly one consumer, the <h1> in Hero.tsx, so this can be tuned freely
+     without touching another page.
 
-  /* Nav-only. Kept separate so the bar can be tuned without touching the
-     page type scale. */
-  --text-nav: 0.6875rem;
+     The middle value does the work: 13vw scales with the viewport, and the
+     two ends only clamp it. Want it larger still? Raise 10rem first (the
+     desktop cap), then 13vw. Tracking tightens and leading closes up as the
+     size grows, or the two lines drift apart at display sizes. */
+  --text-display-xl: clamp(3.75rem, 13vw, 10rem);
+  --text-display-xl--line-height: 0.9;
+  --text-display-xl--letter-spacing: -0.05em;
+
+  /* Nav-only — the link capsule and the Contact button. Kept separate so the
+     bar can be tuned without touching the page type scale.
+
+     This was 0.6875rem, but it never actually applied: tailwind-merge was
+     discarding `text-nav` as if it were a colour, so the bar had always been
+     rendering at the inherited body size of 1.0625rem. Fixing cn.ts made the
+     token take effect and the nav visibly shrank.
+
+     0.875rem is the deliberate size, between the 11px that was written and
+     the 17px that was really on screen. For the previous look exactly, set
+     this to 1.0625rem. Tracking eases off as the size grows. */
+  --text-nav: 0.875rem;
   --text-nav--line-height: 1;
-  --text-nav--letter-spacing: 0.14em;
+  --text-nav--letter-spacing: 0.12em;
   --text-wordmark: 1.0625rem;
   --text-wordmark--line-height: 1;
   --text-wordmark--letter-spacing: -0.02em;
@@ -170,9 +202,11 @@
 }
 
 /* ── Light: cream, never white ────────────────────────────────────────────
- * #FFC800 is ~1.5:1 on cream — unreadable. accent-ink drops to a deep amber
- * (~5.4:1) for text while accent stays bright for fills with dark text on top.
- * Same brand colour, different job per surface.
+ * #FFC800 measures 1.40:1 against the cream ground, so as a FILL it has no
+ * edge — it needs 3:1 to read as a control and doesn't get close. As TEXT it
+ * is worse still. accent-ink drops to a deep amber (5.35:1 on bg, 5.03:1 on
+ * card) while accent stays bright for fills that sit on the dark ground or
+ * carry on-accent text. Same brand colour, different job per surface.
  */
 [data-theme="light"] {
   color-scheme: light;
@@ -182,10 +216,11 @@
   --color-card: #f1ece0;
   --color-line: #e2dacb;
   --color-line-strong: #cdc2ae;
+  --color-line-control: #9a855f; /* 3.02:1 on card, 3.22:1 on bg */
 
   --color-fg: #14120e; /* ~17:1  */
   --color-fg-muted: #565043; /* ~7:1   */
-  --color-fg-subtle: #7d7565; /* ~4.6:1 */
+  --color-fg-subtle: #726a5c; /* 4.82 bg / 5.08 surface / 4.53 card */
 
   --color-accent: #ffc800; /* fills only on this ground */
   --color-accent-ink: #8a5a00; /* ~5.4:1 — the text one */

@@ -46,10 +46,12 @@ export function FilterBar({
           ))}
         </div>
 
+        {/* The group's border is the only thing marking these two icon
+            buttons as controls, so it takes line-control. */}
         <div
           role="group"
           aria-label="Layout"
-          className="hidden shrink-0 items-center gap-1 rounded-pill border border-line p-1 sm:flex"
+          className="hidden shrink-0 items-center gap-1 rounded-pill border border-line-control p-1 sm:flex"
         >
           <ViewButton
             active={view === "grid"}
@@ -91,13 +93,20 @@ export function FilterBar({
             <circle cx="11" cy="11" r="7" />
             <path d="M21 21l-4.3-4.3" />
           </svg>
+          {/*
+            This was the worst offender in the whole palette: border-line on
+            bg-card measured 1.09:1 in dark and 1.18:1 in light, so the search
+            field had essentially no visible edge — you had to know it was
+            there. line-control puts it at 3.02:1, and focus goes to full fg
+            rather than line-strong so the focused state is unmistakable.
+          */}
           <input
             id="work-search"
             type="search"
             value={query}
             onChange={(e) => onQuery(e.target.value)}
             placeholder="Search by title, client or tag"
-            className="h-11 w-full rounded-pill border border-line bg-card pl-11 pr-4 font-mono text-meta-lg text-fg placeholder:text-fg-subtle focus:border-line-strong"
+            className="h-11 w-full rounded-pill border border-line-control bg-card pl-11 pr-4 font-mono text-meta-lg text-fg placeholder:text-fg-subtle focus:border-fg"
           />
         </div>
       </div>
