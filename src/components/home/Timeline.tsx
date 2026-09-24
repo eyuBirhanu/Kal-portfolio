@@ -7,6 +7,7 @@ import { Meta } from "../primitives/Meta";
 import { Pill } from "../primitives/Pill";
 import { Reveal } from "../primitives/Reveal";
 import { SectionHeader } from "../primitives/SectionHeader";
+import { ArrowDown, ArrowRight, ArrowUpRight } from "../primitives/Icon";
 import { cn } from "../../lib/cn";
 
 /** How many projects sit behind each credit — drives the "see the work" link. */
@@ -69,13 +70,12 @@ export function Timeline() {
           >
             <Meta tone="accent">Full history on the CV</Meta>
             <span
-              aria-hidden
               className={cn(
                 "text-accent-ink transition-transform",
                 cvRemote ? "group-hover:translate-x-0.5" : "group-hover:translate-y-0.5"
               )}
             >
-              {cvRemote ? "↗" : "↓"}
+              {cvRemote ? <ArrowUpRight /> : <ArrowDown />}
             </span>
           </a>
         </div>
@@ -206,9 +206,10 @@ function Body({ entry, className }: { entry: Entry; className?: string }) {
           {count > 0 && (
             <Link
               to={`/works?q=${encodeURIComponent(entry.company)}`}
-              className="ml-1 font-mono text-meta uppercase text-accent-ink underline-offset-4 hover:underline"
+              className="group/link ml-1 inline-flex items-center gap-1.5 font-mono text-meta uppercase text-accent-ink underline-offset-4 hover:underline"
             >
-              See the {count} {count === 1 ? "project" : "projects"} →
+              See the {count} {count === 1 ? "project" : "projects"}
+              <ArrowRight className="size-3 transition-transform duration-300 group-hover/link:translate-x-0.5" />
             </Link>
           )}
         </div>

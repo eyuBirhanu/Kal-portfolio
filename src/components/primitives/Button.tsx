@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { cn } from "../../lib/cn";
 import { isRemoteHref } from "../../lib/links";
+import { ArrowDown, ArrowUpRight } from "./Icon";
 
 type Variant = "solid" | "outline" | "accent";
 type Size = "sm" | "md";
@@ -92,7 +93,7 @@ export function ButtonExternal({
       className={cn(base, variants[variant], sizes[size], className)}
     >
       {children}
-      <span aria-hidden>{canDownload ? "↓" : "↗"}</span>
+      {canDownload ? <ArrowDown /> : <ArrowUpRight />}
     </a>
   );
 }

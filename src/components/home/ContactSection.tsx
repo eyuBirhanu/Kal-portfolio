@@ -3,6 +3,7 @@ import profile from "../../data/profile.json";
 import { Meta } from "../primitives/Meta";
 import { SectionHeader } from "../primitives/SectionHeader";
 import { isRemoteHref } from "../../lib/links";
+import { ArrowDown, ArrowUpRight, DocumentIcon, LinkedInIcon } from "../primitives/Icon";
 
 type Channel = {
   id: string;
@@ -71,24 +72,25 @@ export function ContactSection() {
           <Meta tone="subtle">Write to me</Meta>
         </a>
 
-        {/* Secondary, and styled to stay that way. */}
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+        {/* Secondary, and styled to stay that way.
+
+            A leading mark and a trailing arrow, both SVG. The arrow states
+            what the link does — leaves the site, or pulls a file down — which
+            the label alone doesn't, and it now renders the same on every
+            platform instead of hitting an emoji font on some phones. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
           {linkedin && (
             <a
               href={linkedin.url!}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2"
+              className="group inline-flex items-center gap-2.5 text-fg-subtle transition-colors hover:text-accent-ink"
             >
+              <LinkedInIcon />
               <Meta tone="muted" className="transition-colors group-hover:text-accent-ink">
                 LinkedIn
               </Meta>
-              <span
-                aria-hidden
-                className="text-fg-subtle transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:text-accent-ink"
-              >
-                ↗
-              </span>
+              <ArrowUpRight className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </a>
           )}
 
@@ -97,17 +99,17 @@ export function ContactSection() {
             {...(cvRemote
               ? { target: "_blank", rel: "noopener noreferrer" }
               : { download: true })}
-            className="group inline-flex items-center gap-2"
+            className="group inline-flex items-center gap-2.5 text-fg-subtle transition-colors hover:text-accent-ink"
           >
+            <DocumentIcon />
             <Meta tone="muted" className="transition-colors group-hover:text-accent-ink">
               {cvLabel}
             </Meta>
-            <span
-              aria-hidden
-              className="text-fg-subtle transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:text-accent-ink"
-            >
-              {cvRemote ? "↗" : "↓"}
-            </span>
+            {cvRemote ? (
+              <ArrowUpRight className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            ) : (
+              <ArrowDown className="transition-transform duration-300 group-hover:translate-y-0.5" />
+            )}
           </a>
         </div>
       </div>

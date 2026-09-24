@@ -3,6 +3,7 @@ import profile from "../../data/profile.json";
 import { ReelPlayer } from "./ReelPlayer";
 import { Meta } from "../primitives/Meta";
 import { ButtonLink, ButtonExternal } from "../primitives/Button";
+import { ArrowUpRight } from "../primitives/Icon";
 import { HoverPreview } from "../primitives/HoverPreview";
 import { useHoverPreview } from "../../hooks/useHoverPreview";
 import { isRemoteHref } from "../../lib/links";
@@ -103,7 +104,7 @@ export function Hero() {
 
           <div className="flex flex-wrap gap-3">
             <ButtonLink to="/works" variant="solid">
-              See the work <span aria-hidden>↗</span>
+              See the work <ArrowUpRight />
             </ButtonLink>
             <ButtonExternal href={profile.resumeUrl} download>
               {cvLabel}

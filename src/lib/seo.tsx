@@ -17,7 +17,7 @@ import { cld, isCloudinary } from "./media";
  * environment. Vite inlines it at build time, which is when the prerenderer
  * writes these tags into the static HTML.
  */
-const FALLBACK_SITE_URL = "https://kalkidanbirhanu.com";
+const FALLBACK_SITE_URL = "https://kal982.vercel.app/";
 
 /** Trailing slashes stripped, or every path becomes example.com//works. */
 const BASE = (import.meta.env.VITE_SITE_URL ?? FALLBACK_SITE_URL).replace(/\/+$/, "");
