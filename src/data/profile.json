@@ -1,0 +1,226 @@
+{
+  "name": "Kalkidan Birhanu",
+  "headline": "Video Editor & Graphic Designer",
+  "role": "Editor · Designer · Strategist",
+  "basedIn": "Addis Ababa, ET",
+  "available": "Available for freelance, full-time & collaborations",
+  "email": "bkalkidan982@gmail.com",
+  "portraitUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1790280832/lilvroekfgajyblgnxhu.jpg",
+  "resumeUrl": "/cv.pdf",
+  "reel": {
+    "videoUrl": null,
+    "posterUrl": null,
+    "fullVideoUrl": null
+  },
+  "keywords": [
+    "Video Editing",
+    "Graphic Design",
+    "Motion & Detail",
+    "Social Strategy",
+    "Brand Identity",
+    "Campaign Design"
+  ],
+  "socialLinks": [
+    {
+      "name": "LinkedIn",
+      "url": "https://www.linkedin.com/in/kalkidan-birhanu/"
+    },
+    {
+      "name": "Telegram",
+      "url": "https://t.me/kal982"
+    },
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com/@Kalkidan_Birhanu-s7r"
+    }
+  ],
+  "tools": [
+    {
+      "name": "Adobe Premiere Pro",
+      "slug": "adobepremierepro",
+      "group": "video",
+      "label": "EDIT",
+      "note": "Where most of the cutting happens.",
+      "color": "#9999FF",
+      "mono": "PP"
+    },
+    {
+      "name": "Adobe After Effects",
+      "slug": "adobeaftereffects",
+      "group": "video",
+      "label": "MOTION",
+      "note": "Motion, titles and clean-up.",
+      "color": "#9999FF",
+      "mono": "AE",
+      "featured": true
+    },
+    {
+      "name": "CapCut",
+      "slug": "capcut",
+      "group": "video",
+      "label": "SOCIAL",
+      "note": "Fast turnarounds for social.",
+      "color": "#EDEDED",
+      "mono": "CC"
+    },
+    {
+      "name": "Adobe Photoshop",
+      "slug": "adobephotoshop",
+      "group": "design",
+      "label": "PHOTO",
+      "note": "Retouching and composites.",
+      "color": "#31A8FF",
+      "mono": "PS"
+    },
+    {
+      "name": "Adobe Illustrator",
+      "slug": "adobeillustrator",
+      "group": "design",
+      "label": "VECTOR",
+      "note": "Logos, marks and vector work.",
+      "color": "#FF9A00",
+      "mono": "AI"
+    },
+    {
+      "name": "Figma",
+      "slug": "figma",
+      "group": "design",
+      "label": "LAYOUT",
+      "note": "Layout and handoff.",
+      "color": "#F24E1E",
+      "mono": "FI",
+      "featured": true
+    },
+    {
+      "name": "Canva",
+      "slug": "canva",
+      "group": "design",
+      "label": "TEMPLATES",
+      "note": "Templates the client can reuse.",
+      "color": "#00C4CC",
+      "mono": "CV"
+    }
+  ],
+  "services": [
+    {
+      "title": "Video Editing",
+      "desc": "High-retention cuts, color grading, and sound design."
+    },
+    {
+      "title": "Graphic Design",
+      "desc": "Thumbnails, posters, and brand identity systems."
+    },
+    {
+      "title": "Social Strategy",
+      "desc": "Content calendars and engagement growth."
+    }
+  ],
+  "experience": [
+    {
+      "id": "a2sv",
+      "role": "Graphic Designer",
+      "company": "A2SV",
+      "clientId": "a2sv",
+      "start": "2025",
+      "end": "Present",
+      "dateLabel": "2025 — Present",
+      "description": "Design the visual identity for a pan-African tech and talent community — social campaigns, event graphics and recruitment assets.",
+      "tags": [
+        "Brand",
+        "Social",
+        "Events"
+      ],
+      "needsRewrite": true
+    },
+    {
+      "id": "efoy",
+      "role": "Social Media Manager",
+      "company": "Efoy Training Center",
+      "clientId": "efoy",
+      "start": "2025",
+      "end": "2025",
+      "dateLabel": "May — Oct 2025",
+      "description": "Ran the full content operation for a childcare training centre: strategy, graphics and video, built around practical parenting education.",
+      "tags": [
+        "Strategy",
+        "Video",
+        "Graphics"
+      ],
+      "needsRewrite": true
+    },
+    {
+      "id": "yemuyaweg",
+      "role": "Graphic Designer",
+      "company": "YeMuyaWeg",
+      "clientId": "yemuyaweg",
+      "start": "2025",
+      "end": "2025",
+      "dateLabel": "Mar — Jul 2025",
+      "description": "Designed the campaign visuals for a community awareness initiative, volunteer.",
+      "tags": [
+        "Campaign",
+        "Volunteer"
+      ],
+      "needsRewrite": true
+    },
+    {
+      "id": "paramount",
+      "role": "Video Editor",
+      "company": "Paramount Students",
+      "clientId": "paramount",
+      "start": "2024",
+      "end": "2024",
+      "dateLabel": "Jan — Apr 2024",
+      "description": "Edited video content for a student media department, from rushes through to final delivery.",
+      "tags": [
+        "Editing",
+        "Post"
+      ],
+      "needsRewrite": true
+    }
+  ],
+  "aboutIntro": "From student media rooms to leading brand design for a pan-African tech community. Every role added a tool; what stayed the same was the question — what is this supposed to make someone feel?",
+  "channels": [
+    {
+      "id": "telegram",
+      "name": "Telegram",
+      "handle": "@kal982",
+      "url": "https://t.me/kal982",
+      "purpose": "Fastest reply. Best for quick questions and briefs.",
+      "primary": true
+    },
+    {
+      "id": "whatsapp",
+      "name": "WhatsApp",
+      "handle": null,
+      "url": null,
+      "purpose": "Voice notes and day-to-day back and forth.",
+      "primary": true
+    },
+    {
+      "id": "email",
+      "name": "Email",
+      "handle": "bkalkidan982@gmail.com",
+      "url": "mailto:bkalkidan982@gmail.com",
+      "purpose": "Briefs, quotes, contracts and anything with files attached.",
+      "primary": false
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "handle": "kalkidan-birhanu",
+      "url": "https://www.linkedin.com/in/kalkidan-birhanu/",
+      "purpose": "Experience, references and hiring conversations.",
+      "primary": false
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "handle": "@Kalkidan_Birhanu-s7r",
+      "url": "https://www.youtube.com/@Kalkidan_Birhanu-s7r",
+      "purpose": "Longer edits and full cuts.",
+      "primary": false
+    }
+  ],
+  "responseTime": "Usually replies within a day"
+}

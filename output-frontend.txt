@@ -1,0 +1,5303 @@
+
+
+===== FILE: eslint.config.js =====
+
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config([
+  { ignores: ["dist", "node_modules"] },
+  {
+    files: ["**/*.{ts,tsx}"],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs["recommended-latest"],
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: { ecmaVersion: 2022, globals: globals.browser },
+  },
+]);
+
+
+===== FILE: files.js =====
+
+import fs from "fs";
+import path from "path";
+
+const ignoredDirs = [
+  "node_modules",
+  ".git",
+  ".next",
+  "dist",
+  "build",
+  ".DS_Store",
+];
+
+const allowedExtensions = [
+  ".js",
+  ".ts",
+  ".jsx",
+  ".tsx",
+  ".json",
+  ".css",
+  ".scss",
+];
+
+const ignoredFiles = ["package-lock.json"];
+
+const outputFile = "output-frontend.txt";
+
+// Reset output file
+fs.writeFileSync(outputFile, "");
+
+function shouldIncludeFile(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+
+  if (ignoredFiles.includes(fileName)) return false;
+  if (ext === ".md") return false;
+
+  return allowedExtensions.includes(ext);
+}
+
+function walk(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    // Skip ignored directories
+    if (entry.isDirectory()) {
+      if (ignoredDirs.includes(entry.name)) continue;
+      walk(fullPath);
+      continue;
+    }
+
+    // Process files
+    if (entry.isFile() && shouldIncludeFile(entry.name)) {
+      try {
+        const content = fs.readFileSync(fullPath, "utf-8");
+        const header = `\n\n===== FILE: ${fullPath} =====\n\n`;
+
+        fs.appendFileSync(outputFile, header + content);
+        console.log("Added:", fullPath);
+      } catch (err) {
+        console.error("Error reading:", fullPath, err.message);
+      }
+    }
+  }
+}
+
+walk(".");
+console.log(`\nDone! All frontend code saved to ${outputFile}`);
+
+===== FILE: package.json =====
+
+{
+  "name": "kalkidan-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite-react-ssg build && node scripts/postbuild.mjs",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
+    "audit": "node scripts/audit.mjs",
+    "backfill": "node scripts/backfill-dimensions.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/epilogue": "^5.3.0",
+    "@fontsource/space-mono": "^5.3.0",
+    "clsx": "^2.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.30.6",
+    "tailwind-merge": "^3.0.1",
+    "vite-react-ssg": "^0.9.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.2.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "vite": "^7.3.0"
+  }
+}
+
+===== FILE: src\components\home\ClientMarquee.tsx =====
+
+// src/components/home/ClientMarquee.tsx
+import { marqueeClients } from "../../lib/content";
+import { Meta } from "../primitives/Meta";
+
+/**
+ * Only clients with a real logo appear here — `showInMarquee` is false for the
+ * rest. The old build scrolled four placehold.co placeholders alongside real
+ * marks, and advertised three clients that had no work behind them at all.
+ *
+ * Logos are rendered with a brightness/contrast filter rather than being
+ * pre-made white, so one asset works on both the dark and the cream ground.
+ */
+export function ClientMarquee() {
+  if (marqueeClients.length === 0) return null;
+
+  const Row = ({ hidden = false }: { hidden?: boolean }) => (
+    <div className="flex shrink-0 items-center" aria-hidden={hidden || undefined}>
+      {marqueeClients.map((c) => (
+        <div key={c.id} className="mx-10 flex w-28 items-center justify-center sm:mx-14">
+          <img
+            src={c.logoUrl!}
+            alt={hidden ? "" : `${c.name} logo`}
+            loading="lazy"
+            decoding="async"
+            className="h-8 w-auto max-w-full object-contain opacity-50 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <section className="border-b border-line py-14" aria-label="Clients">
+      <div className="mb-8 flex justify-center">
+        <Meta>Trusted by</Meta>
+      </div>
+      <div className="edge-fade pause-on-hover relative flex overflow-hidden">
+        <div className="flex animate-marquee-slow">
+          <Row />
+          <Row hidden />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+===== FILE: src\components\home\ContactSection.tsx =====
+
+// src/components/home/ContactSection.tsx
+import profile from "../../data/profile.json";
+import { Meta } from "../primitives/Meta";
+import { CopyButton } from "../primitives/CopyButton";
+import { ButtonExternal } from "../primitives/Button";
+import { SectionHeader } from "../primitives/SectionHeader";
+
+type Channel = {
+  id: string;
+  name: string;
+  handle: string | null;
+  url: string | null;
+  purpose: string;
+  primary: boolean;
+};
+
+/**
+ * No form. A freelance creative's inbound comes through Telegram, WhatsApp and
+ * email — a form is the least likely path that audience takes, and every field
+ * is friction on the one action this whole page exists to produce.
+ *
+ * Structure: email as one full-width row (it's the address people copy), then
+ * ONE uniform grid for everything else. An earlier version split primary and
+ * secondary channels into two grids, which left Telegram sitting alone in a
+ * two-column row whenever WhatsApp had no number set.
+ *
+ * Channels with a null url are dropped, so WhatsApp appears the moment a
+ * number is added and stays hidden until then.
+ */
+export function ContactSection() {
+  const channels = (profile.channels as Channel[]).filter(
+    (c) => c.url && c.id !== "email"
+  );
+  const mailto = `mailto:${profile.email}?subject=${encodeURIComponent("Project enquiry")}`;
+
+  return (
+    <section id="contact" className="scroll-mt-24 border-t border-line px-6 py-section-lg">
+      <div className="mx-auto flex max-w-3xl flex-col items-center gap-10">
+        <SectionHeader
+          index="05"
+          label="Contact"
+          before="Let's make something"
+          emphasis="worth watching."
+          align="center"
+        />
+
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Meta size="lg" tone="muted">
+            {profile.available}
+          </Meta>
+          <span className="flex items-center gap-2">
+            <span aria-hidden className="size-1.5 rounded-full bg-accent" />
+            <Meta>{profile.responseTime}</Meta>
+          </span>
+        </div>
+
+        {/* The address, shown rather than hidden behind a mailto that may not
+            resolve on webmail. Mono at body size — display size overflowed on
+            phones. `break-all` keeps a long address inside the card. */}
+        <div className="flex w-full flex-col gap-4 rounded-card border border-line-strong bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
+          <span className="flex min-w-0 flex-col gap-1.5">
+            <Meta tone="accent">Email</Meta>
+            <a
+              href={mailto}
+              className="break-all font-mono text-body-sm text-fg transition-colors hover:text-accent-ink sm:text-body"
+            >
+              {profile.email}
+            </a>
+          </span>
+          <CopyButton value={profile.email} label="email address" className="self-start sm:self-auto" />
+        </div>
+
+        {/* One grid, uniform cards, no orphan row */}
+        <ul className="grid w-full gap-3 sm:grid-cols-2">
+          {channels.map((c) => (
+            <li key={c.id}>
+              <a
+                href={c.url!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex h-full items-center justify-between gap-4 rounded-card border border-line px-5 py-4 transition-colors hover:border-line-strong hover:bg-card"
+              >
+                <span className="flex min-w-0 flex-col gap-1">
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="font-display text-body font-bold text-fg">{c.name}</span>
+                    {c.handle && <Meta>{c.handle}</Meta>}
+                  </span>
+                  <span className="text-body-sm text-fg-muted">{c.purpose}</span>
+                </span>
+                <span
+                  aria-hidden
+                  className="flex size-9 shrink-0 items-center justify-center rounded-pill border border-line text-fg-subtle transition-colors duration-300 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 17 17 7M9 7h8v8" />
+                  </svg>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <ButtonExternal href={profile.resumeUrl} download>
+          Download CV
+        </ButtonExternal>
+      </div>
+    </section>
+  );
+}
+
+
+===== FILE: src\components\home\Hero.tsx =====
+
+// src/components/home/Hero.tsx
+import profile from "../../data/profile.json";
+import { ReelPlayer } from "./ReelPlayer";
+import { Meta } from "../primitives/Meta";
+import { ButtonLink, ButtonExternal } from "../primitives/Button";
+
+/**
+ * Name split across two lines: given name in cream roman, surname in the
+ * accent italic. That contrast is the whole identity of the page — strip it
+ * out and this is an ordinary hero.
+ */
+export function Hero() {
+  const [given, ...rest] = profile.name.split(" ");
+  const family = rest.join(" ");
+
+  return (
+    <section className="relative isolate flex min-h-[92svh] items-center overflow-hidden pt-24 pb-16">
+      <ReelPlayer
+        videoUrl={profile.reel.videoUrl}
+        posterUrl={profile.reel.posterUrl}
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-shell px-6">
+        {/* Availability, as a statement rather than a blinking badge */}
+        <div className="mb-8 inline-flex items-center gap-3 rounded-pill border border-line bg-bg/50 px-4 py-2 backdrop-blur-sm">
+          <span aria-hidden className="size-1.5 rounded-full bg-accent" />
+          <Meta tone="muted">{profile.headline}</Meta>
+        </div>
+
+        <h1 className="text-display-xl">
+          <span className="block text-fg">{given}</span>
+          <span className="accent-italic -mt-[0.08em] block">{family}</span>
+        </h1>
+
+        <hr className="my-10 border-line" />
+
+        <dl className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+          <div className="flex items-baseline gap-3">
+            <Meta as="dt" tone="accent">
+              Role
+            </Meta>
+            <Meta as="dd" tone="fg">
+              {profile.role}
+            </Meta>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <Meta as="dt" tone="accent">
+              Based in
+            </Meta>
+            <Meta as="dd" tone="fg">
+              {profile.basedIn}
+            </Meta>
+          </div>
+        </dl>
+
+        <div className="mt-14 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+          <p className="max-w-prose text-body-lg text-fg-muted">
+            <strong className="font-medium text-fg">
+              I cut video and design brand systems
+            </strong>{" "}
+            for teams that need their work to be recognised, not just seen.
+            Seven years of tools, and one question every time: what is this
+            supposed to make someone feel?
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink to="/works" variant="solid">
+              See the work <span aria-hidden>↗</span>
+            </ButtonLink>
+            <ButtonExternal href={profile.resumeUrl} download>
+              Download CV
+            </ButtonExternal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+===== FILE: src\components\home\KeywordMarquee.tsx =====
+
+// src/components/home/KeywordMarquee.tsx
+import profile from "../../data/profile.json";
+import { cn } from "../../lib/cn";
+
+/**
+ * Capability strip under the hero. Alternates accent italic and muted roman so
+ * it reads as rhythm rather than a list.
+ *
+ * The second copy is aria-hidden — the old ClientMarquee duplicated its list
+ * without that, so screen readers announced every logo twice.
+ */
+export function KeywordMarquee() {
+  const items = profile.keywords;
+
+  const Row = ({ hidden = false }: { hidden?: boolean }) => (
+    <div className="flex shrink-0 items-center" aria-hidden={hidden || undefined}>
+      {items.map((word, i) => (
+        <span key={`${word}-${i}`} className="flex items-center">
+          <span
+            className={cn(
+              "whitespace-nowrap px-8 font-display text-display-sm sm:text-display-md",
+              i % 2 === 0
+                ? "accent-italic"
+                : "font-bold text-fg-subtle"
+            )}
+          >
+            {word}
+          </span>
+          <span aria-hidden className="text-accent-ink">
+            ✦
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="border-y border-line bg-surface py-6">
+      <div className="edge-fade pause-on-hover relative flex overflow-hidden">
+        <div className="flex animate-marquee">
+          <Row />
+          <Row hidden />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+===== FILE: src\components\home\ReelPlayer.tsx =====
+
+// src/components/home/ReelPlayer.tsx
+import { useEffect, useRef, useState } from "react";
+import { cld, cldVideoPoster } from "../../lib/media";
+import { usePrefersReducedMotion } from "../../hooks/useMediaQuery";
+import { Meta } from "../primitives/Meta";
+import { cn } from "../../lib/cn";
+
+type Props = {
+  videoUrl: string | null;
+  posterUrl: string | null;
+  className?: string;
+};
+
+/**
+ * The hero background. A video editor whose hero isn't video is a tell.
+ *
+ * Behaviour:
+ *  - muted + loop + playsInline, which is the only combination browsers
+ *    will autoplay. The old build appended autoplay=1 without mute and it
+ *    silently never worked.
+ *  - a poster frame paints first so nothing flashes black
+ *  - under prefers-reduced-motion the video never loads at all — just the
+ *    poster. That also saves the bandwidth on metered connections.
+ *  - with no reel configured it degrades to the poster, and with neither it
+ *    degrades to a plain warm ground. The hero never breaks.
+ */
+export function ReelPlayer({ videoUrl, posterUrl, className }: Props) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const reduced = usePrefersReducedMotion();
+  const [muted, setMuted] = useState(true);
+  const [ready, setReady] = useState(false);
+
+  const poster = posterUrl ?? (videoUrl ? cldVideoPoster(videoUrl) : null);
+  const showVideo = Boolean(videoUrl) && !reduced;
+
+  // Don't keep decoding frames while the hero is off screen.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void el.play().catch(() => {});
+        else el.pause();
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showVideo]);
+
+  const toggleSound = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.muted = !el.muted;
+    setMuted(el.muted);
+    if (!el.muted) void el.play().catch(() => {});
+  };
+
+  return (
+    <div className={cn("absolute inset-0 overflow-hidden", className)}>
+      {poster && (
+        <img
+          src={cld(poster, { width: 1920, quality: "auto" })}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+
+      {showVideo && (
+        <video
+          ref={ref}
+          src={videoUrl!}
+          poster={poster ?? undefined}
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="metadata"
+          onCanPlay={() => setReady(true)}
+          aria-label="Showreel, playing silently"
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+            ready ? "opacity-100" : "opacity-0"
+          )}
+        />
+      )}
+
+      {/* Legibility scrim. Without it the hero type sits on moving footage and
+          contrast is whatever the current frame happens to be. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-linear-to-b from-bg/85 via-bg/70 to-bg"
+      />
+
+      {showVideo && (
+        <button
+          type="button"
+          onClick={toggleSound}
+          className="absolute bottom-6 right-6 z-10 inline-flex min-h-[44px] items-center gap-2 rounded-pill border border-line-strong bg-bg/70 px-5 backdrop-blur-md transition-colors hover:border-fg"
+        >
+          <span aria-hidden className="text-accent-ink">
+            {muted ? "◁" : "◀"}
+          </span>
+          <Meta tone="fg">{muted ? "Sound off" : "Sound on"}</Meta>
+        </button>
+      )}
+    </div>
+  );
+}
+
+
+===== FILE: src\components\home\Timeline.tsx =====
+
+// src/components/home/Timeline.tsx
+import { Link } from "react-router-dom";
+import profile from "../../data/profile.json";
+import { projects } from "../../lib/content";
+import { Meta } from "../primitives/Meta";
+import { Pill } from "../primitives/Pill";
+import { Reveal } from "../primitives/Reveal";
+import { SectionHeader } from "../primitives/SectionHeader";
+import { cn } from "../../lib/cn";
+
+/** How many projects sit behind each credit — drives the "see the work" link. */
+function workCount(clientId: string | null) {
+  if (!clientId) return 0;
+  return projects.filter((p) => p.clientId === clientId).length;
+}
+
+export function Timeline() {
+  const entries = profile.experience;
+
+  return (
+    <section id="about" className="scroll-mt-24 px-6 py-section-lg">
+      <div className="mx-auto flex max-w-shell flex-col gap-16">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHeader
+            index="03"
+            label="About"
+            before="Short story of"
+            emphasis="where I've been."
+          />
+          <p className="max-w-md text-fg-muted lg:pb-3">{profile.aboutIntro}</p>
+        </div>
+
+        <ol className="flex flex-col">
+          {entries.map((entry, i) => {
+            const count = workCount(entry.clientId);
+            const isFirst = i === 0;
+
+            return (
+              <Reveal key={entry.id} delay={Math.min(i, 3) * 80}>
+                <li
+                  className={cn(
+                    "grid grid-cols-1 gap-6 border-t border-line py-10 md:grid-cols-[10rem_minmax(0,1fr)_auto] md:gap-10",
+                    // Only the current role gets a lifted surface. Everything
+                    // else stays flat, so the eye knows where "now" is.
+                    isFirst && "rounded-card border-transparent bg-card px-6 md:px-8"
+                  )}
+                >
+                  {/* Year gutter */}
+                  <div className="flex items-start gap-3">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "mt-4 size-2 shrink-0 rounded-full",
+                        isFirst ? "bg-accent" : "bg-line-strong"
+                      )}
+                    />
+                    <div className="flex flex-col gap-1">
+                      <span className="font-display text-display-sm font-bold text-fg">
+                        {entry.start}
+                      </span>
+                      <Meta>{entry.dateLabel}</Meta>
+                    </div>
+                  </div>
+
+                  {/* Role */}
+                  <div className="flex flex-col gap-3">
+                    <h3 className="text-display-xs">{entry.role}</h3>
+                    <Meta tone="accent">— {entry.company}</Meta>
+                    <p className="max-w-prose text-body-sm text-fg-muted">
+                      {entry.description}
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {entry.tags.map((t) => (
+                        <Pill key={t}>{t}</Pill>
+                      ))}
+
+                      {/*
+                        The thing the site this is modelled on can't do: a
+                        credit that opens the work behind it. Turns a résumé
+                        into an index of the portfolio.
+                      */}
+                      {count > 0 && (
+                        <Link
+                          to={`/works?q=${encodeURIComponent(entry.company)}`}
+                          className="ml-1 font-mono text-meta uppercase text-accent-ink underline-offset-4 hover:underline"
+                        >
+                          See the {count} {count === 1 ? "project" : "projects"} →
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                  <Meta className="hidden self-start tabular-nums md:block">
+                    / {String(i + 1).padStart(2, "0")}
+                  </Meta>
+                </li>
+              </Reveal>
+            );
+          })}
+        </ol>
+
+        <div className="border-t border-line pt-8">
+          <a
+            href={profile.resumeUrl}
+            download
+            className="group inline-flex items-center gap-2"
+          >
+            <Meta tone="accent">Full history on the CV</Meta>
+            <span aria-hidden className="text-accent-ink transition-transform group-hover:translate-y-0.5">
+              ↓
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+===== FILE: src\components\home\Toolbox.tsx =====
+
+// src/components/home/Toolbox.tsx
+//
+// Icons are local SVGs, in full brand colour at rest.
+//
+// The previous version fetched two images per tile from cdn.simpleicons.org —
+// fourteen third-party requests — and tinted the resting one grey so colour
+// only appeared on hover, which meant no colour at all on touch. It also
+// didn't work: Simple Icons carries no Adobe, Canva or CapCut mark, so six of
+// seven requests 404'd into a grey letter.
+//
+// Colour is now carried by the icon alone. Tile chrome stays in the site
+// palette, and the brand hue appears again only on the hover edge, so seven
+// saturated marks sit inside the design instead of fighting it.
+//
+// Two groups side by side, equal tiles within each. The flat treatment is
+// deliberate — these are tools, not projects, and ranking them by tile size
+// would give the section more weight than it deserves against the work.
+
+import profile from "../../data/profile.json";
+import { Meta } from "../primitives/Meta";
+import { Reveal } from "../primitives/Reveal";
+import { SectionHeader } from "../primitives/SectionHeader";
+import { ToolIcon } from "../primitives/ToolIcon";
+
+type Tool = {
+  name: string;
+  slug: string;
+  group: string;
+  note?: string;
+  /** Brand hex. Used for the icon fallback and the hover edge. */
+  color: string;
+  mono?: string;
+  /** Present in the data but unused by this layout. */
+  label?: string;
+  featured?: boolean;
+  dimOnLight?: boolean;
+};
+
+const GROUPS = [
+  { id: "video", label: "For the cut", unit: "tools" },
+  { id: "design", label: "For everything else", unit: "tools" },
+] as const;
+
+export function Toolbox() {
+  const tools = profile.tools as Tool[];
+
+  return (
+    <section className="border-t border-line px-6 py-section-lg">
+      <div className="mx-auto flex max-w-shell flex-col gap-16">
+        <SectionHeader
+          index="04"
+          label="Toolbox"
+          before="The tools I reach for"
+          emphasis="daily."
+        />
+
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          {GROUPS.map((group) => {
+            const items = tools.filter((t) => t.group === group.id);
+            if (items.length === 0) return null;
+
+            return (
+              <div key={group.id} className="flex flex-col gap-6">
+                <div className="flex items-baseline justify-between border-b border-line pb-4">
+                  <h3 className="text-display-xs">{group.label}</h3>
+                  <Meta>
+                    {String(items.length).padStart(2, "0")} {group.unit}
+                  </Meta>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
+                  {items.map((tool, i) => (
+                    <Reveal key={tool.slug} delay={Math.min(i, 4) * 50}>
+                      <ToolTile tool={tool} />
+                    </Reveal>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ToolTile({ tool }: { tool: Tool }) {
+  return (
+    <div
+      className="group flex h-full flex-col gap-3 rounded-card border border-line bg-card p-4 transition-colors duration-300 hover:border-(--tool-edge)"
+      style={
+        {
+          "--tool-edge": `color-mix(in srgb, ${tool.color} 55%, transparent)`,
+        } as React.CSSProperties
+      }
+    >
+      <ToolIcon
+        slug={tool.slug}
+        name={tool.name}
+        color={tool.color}
+        mono={tool.mono}
+        dimOnLight={tool.dimOnLight}
+      />
+
+      <div className="flex flex-col gap-1">
+        <span className="font-display text-body-sm font-bold text-fg">{tool.name}</span>
+        {tool.note && (
+          <span className="text-meta leading-relaxed text-fg-subtle">{tool.note}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+===== FILE: src\components\layout\Footer.tsx =====
+
+// src/components/layout/Footer.tsx
+import profile from "../../data/profile.json";
+import { Meta } from "../primitives/Meta";
+
+export function Footer() {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="border-t border-line px-6 py-8">
+      <div className="mx-auto flex max-w-shell flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
+        <Meta>
+          © {year} · {profile.name}
+        </Meta>
+
+        <nav className="flex flex-wrap items-center justify-center gap-6">
+          {profile.socialLinks.map((s) => (
+            <a
+              key={s.name}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-meta uppercase text-fg-subtle transition-colors hover:text-accent-ink"
+            >
+              {s.name}
+            </a>
+          ))}
+          <a
+            href="#top"
+            className="font-mono text-meta uppercase text-fg-subtle transition-colors hover:text-accent-ink"
+          >
+            Back to top ↑
+          </a>
+        </nav>
+
+        <Meta>Designed &amp; built in Addis Ababa</Meta>
+      </div>
+    </footer>
+  );
+}
+
+
+===== FILE: src\components\layout\Logo.tsx =====
+
+// src/components/layout/Logo.tsx
+
+/**
+ * The wordmark is TEXT, not SVG.
+ *
+ * The old mark was 1.4kb of path data spelling out a full wordmark with two
+ * orbital arcs behind it — illegible at 32px in a nav bar. This inherits the
+ * theme colour automatically, scales perfectly, and weighs nothing.
+ * The only place an actual drawn mark is needed is the favicon, where the
+ * browser can't render our font.
+ */
+export function Logo({ className }: { className?: string }) {
+  return (
+    <span className={className}>
+      <span className="inline-flex items-center gap-2 font-display text-wordmark font-bold text-fg">
+        <span aria-hidden className="size-1.5 rounded-full bg-accent" />
+        KB
+      </span>
+      <span className="sr-only">Kalkidan Birhanu — home</span>
+    </span>
+  );
+}
+
+
+===== FILE: src\components\layout\Nav.tsx =====
+
+// src/components/layout/Nav.tsx
+import { useEffect, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
+import { ButtonLink } from "../primitives/Button";
+import { cn } from "../../lib/cn";
+
+const LINKS = [
+  { to: "/", label: "Home", end: true },
+  { to: "/works", label: "Work", end: false },
+];
+
+export function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Lock scroll while the drawer is open, restoring whatever was there before
+  // rather than blindly setting "auto" — the old build fought its own lightbox.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <>
+      {/* Keyboard users land here first */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-pill focus:bg-accent focus:px-5 focus:py-3 focus:font-mono focus:text-meta-lg focus:uppercase focus:text-on-accent"
+      >
+        Skip to content
+      </a>
+
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-2.5">
+        <div
+          className={cn(
+            "pointer-events-auto flex h-[52px] w-full max-w-shell items-center justify-between",
+            // Always blurred. It was transparent until scroll, which let the
+            // hero type run underneath it unreadably.
+            "rounded-pill border px-3 backdrop-blur-xl sm:px-4",
+            "transition-colors duration-300 ease-out",
+            scrolled
+              ? "border-line bg-bg/85 shadow-lg shadow-black/20"
+              : "border-line/60 bg-bg/55"
+          )}
+        >
+          <Link to="/" onClick={() => setOpen(false)} className="shrink-0">
+            <Logo />
+          </Link>
+
+          {/* Desktop: the centred link capsule */}
+          <nav className="hidden items-center gap-0.5 rounded-pill border border-line bg-card/60 p-0.5 sm:flex">
+            {LINKS.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                end={l.end}
+                className={({ isActive }) =>
+                  cn(
+                    "rounded-pill px-4 py-1.5 font-mono text-nav uppercase transition-colors",
+                    isActive ? "bg-bg text-accent-ink" : "text-fg-subtle hover:text-fg"
+                  )
+                }
+              >
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <ButtonLink
+              to="/#contact"
+              variant="accent"
+              size="sm"
+              className="hidden h-9 min-h-0 px-4 text-nav sm:inline-flex"
+            >
+              Contact <span aria-hidden>↗</span>
+            </ButtonLink>
+
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              aria-label={open ? "Close menu" : "Open menu"}
+              className="flex size-10 items-center justify-center rounded-pill border border-line text-fg sm:hidden"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                {open ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M4 7h16M4 17h16" />}
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
+      <div
+        id="mobile-nav"
+        className={cn(
+          "fixed inset-0 z-40 sm:hidden",
+          open ? "visible" : "invisible pointer-events-none"
+        )}
+      >
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+          className={cn(
+            "absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-300",
+            open ? "opacity-100" : "opacity-0"
+          )}
+        />
+        <div
+          className={cn(
+            "absolute inset-x-0 top-0 flex flex-col gap-2 rounded-b-3xl border-b border-line",
+            "bg-surface px-6 pb-8 pt-24 transition-transform duration-300 ease-out",
+            open ? "translate-y-0" : "-translate-y-full"
+          )}
+        >
+          {LINKS.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.end}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                cn(
+                  "border-b border-line py-4 font-display text-display-xs",
+                  isActive ? "text-accent-ink" : "text-fg"
+                )
+              }
+            >
+              {l.label}
+            </NavLink>
+          ))}
+          <Link
+            to="/#contact"
+            onClick={() => setOpen(false)}
+            className="border-b border-line py-4 font-display text-display-xs text-fg"
+          >
+            Contact
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
+
+===== FILE: src\components\layout\RootLayout.tsx =====
+
+// src/components/layout/RootLayout.tsx
+import { Outlet, ScrollRestoration } from "react-router-dom";
+import { Nav } from "./Nav";
+import { Footer } from "./Footer";
+
+export default function RootLayout() {
+  return (
+    <div id="top" className="flex min-h-screen flex-col bg-bg">
+      <Nav />
+      <main id="main" className="flex-1">
+        <Outlet />
+      </main>
+      <Footer />
+      {/*
+        Restores scroll position on back/forward, and jumps to top on a new
+        route — except when there's a hash, so /#contact still lands correctly.
+        The old build only did window.scrollTo(0,0) on one page.
+      */}
+      <ScrollRestoration
+        getKey={(location) => location.pathname + location.search}
+      />
+    </div>
+  );
+}
+
+
+===== FILE: src\components\layout\ThemeToggle.tsx =====
+
+// src/components/layout/ThemeToggle.tsx
+import { useTheme } from "../../hooks/useTheme";
+
+export function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const next = theme === "dark" ? "light" : "dark";
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={`Switch to ${next} theme`}
+      title={`Switch to ${next} theme`}
+      className="flex size-10 items-center justify-center rounded-pill border border-line text-fg-subtle transition-colors hover:border-line-strong hover:text-fg sm:size-9"
+    >
+      {/* Half-filled circle: one glyph for both states, no icon swap flicker */}
+      <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden>
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" />
+      </svg>
+    </button>
+  );
+}
+
+
+===== FILE: src\components\primitives\Button.tsx =====
+
+// src/components/primitives/Button.tsx
+import { Link } from "react-router-dom";
+import { cn } from "../../lib/cn";
+
+type Variant = "solid" | "outline" | "accent";
+type Size = "sm" | "md";
+
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-pill font-mono text-meta-lg uppercase " +
+  "transition-colors duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50 " +
+  // 44px minimum target — the old build had 32px tap targets on mobile
+  "min-h-[44px]";
+
+const variants: Record<Variant, string> = {
+  // Cream/near-black fill. The primary action.
+  solid: "bg-fg text-bg hover:bg-fg/85",
+  outline: "border border-line-strong text-fg hover:border-fg hover:bg-fg/5",
+  // Bright yellow in BOTH themes — safe because the text on it is on-accent.
+  accent: "bg-accent text-on-accent hover:bg-accent-hover",
+};
+
+const sizes: Record<Size, string> = {
+  sm: "px-5 py-2.5",
+  md: "px-7 py-3.5",
+};
+
+type Common = { variant?: Variant; size?: Size; className?: string; children: React.ReactNode };
+
+export function Button({
+  variant = "outline",
+  size = "md",
+  className,
+  ...props
+}: Common & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button className={cn(base, variants[variant], sizes[size], className)} {...props} />;
+}
+
+/** Internal navigation. Renders a real <a> so Tab and middle-click work. */
+export function ButtonLink({
+  to,
+  variant = "outline",
+  size = "md",
+  className,
+  children,
+}: Common & { to: string }) {
+  return (
+    <Link to={to} className={cn(base, variants[variant], sizes[size], className)}>
+      {children}
+    </Link>
+  );
+}
+
+/** External links get the arrow and the security rel the old build omitted. */
+export function ButtonExternal({
+  href,
+  variant = "outline",
+  size = "md",
+  className,
+  children,
+  download,
+}: Common & { href: string; download?: boolean }) {
+  return (
+    <a
+      href={href}
+      target={download ? undefined : "_blank"}
+      rel="noopener noreferrer"
+      download={download}
+      className={cn(base, variants[variant], sizes[size], className)}
+    >
+      {children}
+      <span aria-hidden>{download ? "↓" : "↗"}</span>
+    </a>
+  );
+}
+
+
+===== FILE: src\components\primitives\CopyButton.tsx =====
+
+// src/components/primitives/CopyButton.tsx
+import { useEffect, useState } from "react";
+import { cn } from "../../lib/cn";
+
+/**
+ * Exists because `mailto:` silently does nothing for anyone using webmail with
+ * no default handler — they click, nothing happens, and they leave. Showing the
+ * address and letting them copy it is the fix.
+ */
+export function CopyButton({ value, label = "address", className }: {
+  value: string;
+  label?: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+    } catch {
+      // Older Safari and any non-secure context. Select it instead so the
+      // person can hit Cmd+C themselves rather than getting nothing.
+      const el = document.createElement("textarea");
+      el.value = value;
+      document.body.appendChild(el);
+      el.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+      } catch {
+        /* give up quietly — the address is visible on screen regardless */
+      }
+      el.remove();
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={copied ? `${label} copied` : `Copy ${label}`}
+      className={cn(
+        "inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-pill border px-4",
+        "font-mono text-meta uppercase transition-colors",
+        copied
+          ? "border-accent text-accent-ink"
+          : "border-line text-fg-subtle hover:border-line-strong hover:text-fg",
+        className
+      )}
+    >
+      {copied ? (
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+            <path d="m5 13 4 4L19 7" />
+          </svg>
+          Copied
+        </>
+      ) : (
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <rect x="9" y="9" width="11" height="11" rx="2" />
+            <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+          </svg>
+          Copy
+        </>
+      )}
+      <span role="status" aria-live="polite" className="sr-only">
+        {copied ? "Copied to clipboard" : ""}
+      </span>
+    </button>
+  );
+}
+
+
+===== FILE: src\components\primitives\Image.tsx =====
+
+// src/components/primitives/Image.tsx
+import { useState } from "react";
+import { cld, cldSrcSet, cldBlurUrl } from "../../lib/media";
+import { cn } from "../../lib/cn";
+
+/**
+ * Every image in the site goes through here.
+ *
+ * Three fixes over the old <img src={thumbnailUrl}>:
+ *  1. Cloudinary transforms — full-res PNGs were being served as 600px thumbs
+ *  2. Intrinsic width/height, so the masonry grid stops jumping as images land
+ *  3. A blurred 24px placeholder that cross-fades to the real image
+ */
+export function Image({
+  src,
+  alt,
+  width,
+  height,
+  sizes = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
+  targetWidth = 800,
+  crop,
+  className,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  width?: number | null;
+  height?: number | null;
+  sizes?: string;
+  targetWidth?: number;
+  crop?: "fill" | "limit";
+  className?: string;
+  /** Skips lazy-loading for above-the-fold media. */
+  priority?: boolean;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const blur = cldBlurUrl(src);
+
+  return (
+    <div
+      className={cn("relative overflow-hidden bg-card", className)}
+      style={width && height ? { aspectRatio: `${width} / ${height}` } : undefined}
+    >
+      {blur && !loaded && (
+        <img
+          src={blur}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+        />
+      )}
+      <img
+        src={cld(src, { width: targetWidth, crop })}
+        srcSet={cldSrcSet(src)}
+        sizes={sizes}
+        alt={alt}
+        width={width ?? undefined}
+        height={height ?? undefined}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={cn(
+          "relative h-full w-full object-cover transition-opacity duration-500 ease-out",
+          loaded ? "opacity-100" : "opacity-0"
+        )}
+      />
+    </div>
+  );
+}
+
+
+===== FILE: src\components\primitives\Meta.tsx =====
+
+// src/components/primitives/Meta.tsx
+import { cn } from "../../lib/cn";
+
+/**
+ * The mono label. Used for section eyebrows, dates, clients, formats, roles —
+ * the connective tissue of the whole design. Exists once so it can never drift.
+ */
+export function Meta({
+  children,
+  as: Tag = "span",
+  size = "sm",
+  tone = "subtle",
+  className,
+}: {
+  children: React.ReactNode;
+  as?: "span" | "p" | "div" | "dt" | "dd";
+  size?: "sm" | "lg";
+  tone?: "subtle" | "muted" | "accent" | "fg";
+  className?: string;
+}) {
+  return (
+    <Tag
+      className={cn(
+        "font-mono uppercase",
+        size === "sm" ? "text-meta" : "text-meta-lg",
+        {
+          subtle: "text-fg-subtle",
+          muted: "text-fg-muted",
+          accent: "text-accent-ink",
+          fg: "text-fg",
+        }[tone],
+        className
+      )}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+/** A labelled pair, as in ROLE — Editor · Designer. */
+export function MetaPair({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline gap-3">
+      <Meta tone="accent">{label}</Meta>
+      <Meta tone="fg">{value}</Meta>
+    </div>
+  );
+}
+
+
+===== FILE: src\components\primitives\Pill.tsx =====
+
+// src/components/primitives/Pill.tsx
+import { cn } from "../../lib/cn";
+
+/** Static tag chip — tools, categories, tags. */
+export function Pill({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-pill border border-line px-3 py-1",
+        "font-mono text-meta uppercase text-fg-subtle",
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** Selectable filter chip. A real <button> with aria-pressed, not a div. */
+export function TogglePill({
+  active,
+  children,
+  className,
+  ...props
+}: { active: boolean; children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      className={cn(
+        "inline-flex min-h-[44px] items-center rounded-pill px-5 font-mono text-meta-lg uppercase",
+        "transition-colors duration-200 ease-out",
+        active
+          ? "bg-accent text-on-accent"
+          : "border border-line text-fg-subtle hover:border-line-strong hover:text-fg",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+
+===== FILE: src\components\primitives\Reveal.tsx =====
+
+// src/components/primitives/Reveal.tsx
+import { useReveal } from "../../hooks/useReveal";
+import { cn } from "../../lib/cn";
+
+/** Fades and rises its children into view once. No-ops under reduced motion. */
+export function Reveal({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode;
+  /** Stagger in ms — keep under ~250 or it reads as sluggish. */
+  delay?: number;
+  className?: string;
+}) {
+  const { ref, visible } = useReveal<HTMLDivElement>();
+
+  return (
+    <div
+      ref={ref}
+      style={{ animationDelay: `${delay}ms` }}
+      className={cn(visible ? "animate-rise" : "opacity-0", className)}
+    >
+      {children}
+    </div>
+  );
+}
+
+
+===== FILE: src\components\primitives\SectionHeader.tsx =====
+
+// src/components/primitives/SectionHeader.tsx
+import { Meta } from "./Meta";
+import { cn } from "../../lib/cn";
+
+/**
+ * "— 02 · SELECTED WORK" above a display heading with one italic accent word.
+ *
+ * `emphasis` is rendered in Satoshi's true italic, which is why the display
+ * face had to change: a browser-faked oblique looks wrong at this size.
+ */
+export function SectionHeader({
+  index,
+  label,
+  before,
+  emphasis,
+  after,
+  align = "left",
+  children,
+  className,
+}: {
+  index: string;
+  label: string;
+  before?: string;
+  emphasis?: string;
+  after?: string;
+  align?: "left" | "center";
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <header
+      className={cn(
+        "flex flex-col gap-5",
+        align === "center" && "items-center text-center",
+        className
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <span aria-hidden className="h-px w-8 bg-line-strong" />
+        <Meta>
+          {index} · {label}
+        </Meta>
+      </div>
+
+      <h2 className="max-w-3xl text-display-lg">
+        {before}
+        {emphasis && (
+          <>
+            {before ? " " : ""}
+            <em className="accent-italic not-italic [font-style:italic]">{emphasis}</em>
+          </>
+        )}
+        {after}
+      </h2>
+
+      {children && <div className="max-w-prose text-fg-muted">{children}</div>}
+    </header>
+  );
+}
+
+
+===== FILE: src\components\primitives\ToolIcon.tsx =====
+
+// src/components/primitives/ToolIcon.tsx
+//
+// Replaces the two cross-fading cdn.simpleicons.org requests per tile.
+//
+// Simple Icons carries no Adobe, Canva or CapCut mark — six of the seven
+// slugs 404'd, hit onError, and rendered a grey letter square. That is why
+// the toolbox had no icons and no colour, on any device.
+//
+// Icons are now local files at /public/icons/<slug>.svg, in full brand
+// colour at rest. Nothing is fetched from a third party, which matches how
+// the fonts are already handled.
+//
+// Three sizes. "sm" (32px) is the timeline clip, where the mark sits beside
+// the tool's name and only has to carry colour and shape. "md" and "lg" are
+// for anywhere the mark stands alone and has to be read on its own — below
+// about 48px Canva's wordmark stops resolving.
+//
+// When a file is missing the fallback is a brand-tinted monogram in the
+// site's own display face, not a grey letter on grey. It reads as a
+// deliberate tile rather than a broken image, and it upgrades to the real
+// mark the moment the file exists.
+
+import { useState } from "react";
+import { cn } from "../../lib/cn";
+
+type Size = "sm" | "md" | "lg";
+
+const BOX: Record<Size, string> = {
+  sm: "size-8",
+  md: "size-12",
+  lg: "size-20",
+};
+
+const PX: Record<Size, number> = {
+  sm: 32,
+  md: 48,
+  lg: 80,
+};
+
+const FALLBACK_TYPE: Record<Size, string> = {
+  sm: "rounded-[0.3rem] text-[0.6875rem]",
+  md: "rounded-[0.45rem] text-sm",
+  lg: "rounded-[0.7rem] text-display-xs",
+};
+
+type Props = {
+  /** File name under /public/icons, without the extension. */
+  slug: string;
+  name: string;
+  /** Brand hex, e.g. "#31A8FF". Drives the fallback tile and the hover edge. */
+  color: string;
+  /** Two-letter monogram for the fallback. Defaults to the first two initials. */
+  mono?: string;
+  size?: Size;
+  /**
+   * Optional, and off for every tool at the moment.
+   *
+   * Some brand colours are drawn for a dark ground and go pale on cream.
+   * Adobe's #9999FF is the clear case, but only when the mark is used as a
+   * bare glyph — the full app tiles carry their own dark background, so they
+   * hold on both themes and need nothing here.
+   */
+  dimOnLight?: boolean;
+  className?: string;
+};
+
+/** "Adobe Premiere Pro" → "PP", "Figma" → "FI". */
+function initials(name: string) {
+  const words = name.replace(/^Adobe\s+/i, "").split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return (words[0]?.slice(0, 2) ?? "??").toUpperCase();
+}
+
+export function ToolIcon({
+  slug,
+  name,
+  color,
+  mono,
+  size = "md",
+  dimOnLight,
+  className,
+}: Props) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <span
+        aria-hidden
+        className={cn(
+          "flex shrink-0 items-center justify-center border",
+          "font-display font-bold leading-none tracking-tight",
+          BOX[size],
+          FALLBACK_TYPE[size],
+          className
+        )}
+        style={{
+          // Tinted, not solid: a saturated block per tool would shout over a
+          // palette built on one accent.
+          backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)`,
+          borderColor: `color-mix(in srgb, ${color} 34%, transparent)`,
+          color,
+        }}
+      >
+        {mono ?? initials(name)}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={`/icons/${slug}.svg`}
+      alt=""
+      aria-hidden
+      width={PX[size]}
+      height={PX[size]}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
+      className={cn(
+        "shrink-0 object-contain",
+        BOX[size],
+        dimOnLight && "light:brightness-[0.72] light:saturate-150",
+        className
+      )}
+    />
+  );
+}
+
+===== FILE: src\components\project\CaseStudy.tsx =====
+
+// src/components/project/CaseStudy.tsx
+import type { CaseStudy as CaseStudyType } from "../../types";
+import { Meta } from "../primitives/Meta";
+
+/**
+ * Featured work only. Three beats — what was needed, what you did, what
+ * happened — because that's the shape a client reads a portfolio in.
+ * Outcome is optional: a made-up number is worse than no number.
+ */
+export function CaseStudy({ data }: { data: CaseStudyType }) {
+  const sections = [
+    { label: "The brief", body: data.brief },
+    { label: "The approach", body: data.approach },
+    ...(data.outcome ? [{ label: "The outcome", body: data.outcome }] : []),
+  ];
+
+  return (
+    <div className="flex flex-col gap-10">
+      {sections.map((s) => (
+        <section key={s.label} className="flex flex-col gap-3">
+          <Meta tone="accent">{s.label}</Meta>
+          <p className="max-w-prose text-body-lg text-fg-muted">{s.body}</p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+
+===== FILE: src\components\project\ProjectGallery.tsx =====
+
+// src/components/project/ProjectGallery.tsx
+import type { GalleryItem } from "../../types";
+import { Image } from "../primitives/Image";
+import { Meta } from "../primitives/Meta";
+import { Reveal } from "../primitives/Reveal";
+
+/**
+ * Stacked large rather than a thumbnail grid that opens a modal. On a case
+ * study you want people scrolling *through* the work, not clicking into it —
+ * every extra click is a place to drop off.
+ */
+export function ProjectGallery({ items }: { items: GalleryItem[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-4">
+      <Meta>
+        Gallery — {String(items.length).padStart(2, "0")}{" "}
+        {items.length === 1 ? "image" : "images"}
+      </Meta>
+
+      <div className="flex flex-col gap-10">
+        {items.map((item, i) => (
+          <Reveal key={item.url} delay={Math.min(i, 3) * 60}>
+            <figure className="flex flex-col gap-3">
+              <Image
+                src={item.url}
+                alt={item.alt}
+                width={item.width}
+                height={item.height}
+                targetWidth={1600}
+                sizes="(min-width: 1280px) 72rem, 100vw"
+                className="rounded-card border border-line"
+              />
+              {item.caption && (
+                <figcaption className="text-body-sm text-fg-subtle">{item.caption}</figcaption>
+              )}
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
+===== FILE: src\components\project\ProjectMedia.tsx =====
+
+// src/components/project/ProjectMedia.tsx
+import type { ResolvedProject } from "../../types";
+import { cld, cldSrcSet } from "../../lib/media";
+import { youTubeEmbed, VIDEO_ASPECT } from "../../lib/media";
+
+/** The hero media. One component, three shapes, chosen by project type. */
+export function ProjectMedia({ project }: { project: ResolvedProject }) {
+  if (project.type === "video") {
+    return (
+      <div
+        className={`overflow-hidden rounded-card border border-line bg-card ${VIDEO_ASPECT[project.media.format]}`}
+      >
+        <iframe
+          src={youTubeEmbed(project.media.embedUrl)}
+          title={`${project.title} — video`}
+          // The old embed omitted most of these, and appended autoplay without
+          // mute, which browsers refuse outright.
+          allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+          loading="lazy"
+          className="h-full w-full"
+        />
+      </div>
+    );
+  }
+
+  const src = project.type === "graphic" ? project.media.fullUrl : project.thumbnail.url;
+
+  // Capped so a tall poster is visible in one screen rather than forcing a
+  // scroll just to see the whole thing.
+  return (
+    <div className="flex justify-center">
+      <img
+        src={cld(src, { width: 1600 })}
+        srcSet={cldSrcSet(src, [800, 1200, 1600])}
+        sizes="(min-width: 1280px) 72rem, 100vw"
+        alt={project.title}
+        width={project.thumbnail.width ?? undefined}
+        height={project.thumbnail.height ?? undefined}
+        fetchPriority="high"
+        decoding="async"
+        className="fit-screen rounded-card border border-line bg-card"
+      />
+    </div>
+  );
+}
+
+
+===== FILE: src\components\project\ProjectMeta.tsx =====
+
+// src/components/project/ProjectMeta.tsx
+//
+// The credits. Still the clapperboard slate in spirit, but laid out across
+// the page rather than pinned down one side.
+//
+// Client and year moved up into the title block, so this component now only
+// carries what is genuinely extra: role, tools, and the per-type fields. If
+// none of those are filled in — which is currently true for every project —
+// it renders nothing rather than a strip of one row. A visitor should never
+// be able to tell which fields are still empty.
+
+import type { ResolvedProject } from "../../types";
+import { Meta } from "../primitives/Meta";
+
+export function ProjectMeta({ project }: { project: ResolvedProject }) {
+  const rows: { label: string; value: React.ReactNode }[] = [];
+
+  if (project.role.length) rows.push({ label: "Role", value: project.role.join(", ") });
+  if (project.tools.length) rows.push({ label: "Tools", value: project.tools.join(", ") });
+
+  if (project.type === "video") {
+    rows.push({ label: "Format", value: project.media.format });
+  } else if (project.type === "social") {
+    rows.push({ label: "Platform", value: project.media.platform });
+    if (project.media.stats) rows.push({ label: "Results", value: project.media.stats });
+  }
+
+  if (rows.length === 0) return null;
+
+  return (
+    <dl className="mx-auto flex w-full max-w-3xl flex-col gap-6 border-y border-line py-6 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-14 sm:gap-y-6">
+      {rows.map((r) => (
+        <div key={r.label} className="flex flex-col items-center gap-1.5 text-center">
+          <Meta as="dt">{r.label}</Meta>
+          <dd className="max-w-xs text-body-sm text-fg">{r.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+===== FILE: src\components\project\ProjectNav.tsx =====
+
+// src/components/project/ProjectNav.tsx
+import { Link } from "react-router-dom";
+import type { ResolvedProject } from "../../types";
+import { Meta } from "../primitives/Meta";
+import { cn } from "../../lib/cn";
+
+export function ProjectNav({
+  prev,
+  next,
+}: {
+  prev: ResolvedProject | null;
+  next: ResolvedProject | null;
+}) {
+  if (!prev && !next) return null;
+
+  return (
+    <nav aria-label="Project navigation" className="grid gap-px border-t border-line sm:grid-cols-2">
+      <Side project={prev} direction="prev" />
+      <Side project={next} direction="next" />
+    </nav>
+  );
+}
+
+function Side({
+  project,
+  direction,
+}: {
+  project: ResolvedProject | null;
+  direction: "prev" | "next";
+}) {
+  const isNext = direction === "next";
+  if (!project) return <span className="hidden sm:block" />;
+
+  return (
+    <Link
+      to={`/works/${project.slug}`}
+      className={cn(
+        "group flex flex-col gap-2 py-8 transition-colors hover:bg-card",
+        isNext ? "sm:items-end sm:pl-8 sm:text-right" : "sm:pr-8"
+      )}
+    >
+      <Meta>{isNext ? "Next project →" : "← Previous project"}</Meta>
+      <span className="text-display-xs text-fg transition-colors group-hover:text-accent-ink">
+        {project.title}
+      </span>
+      <Meta tone="subtle">
+        {[project.client?.name, project.year].filter(Boolean).join(" · ")}
+      </Meta>
+    </Link>
+  );
+}
+
+
+===== FILE: src\components\project\RelatedWork.tsx =====
+
+// src/components/project/RelatedWork.tsx
+import type { ResolvedProject } from "../../types";
+import { ProjectCard } from "../work/ProjectCard";
+import { Meta } from "../primitives/Meta";
+
+export function RelatedWork({
+  projects,
+  clientName,
+}: {
+  projects: ResolvedProject[];
+  clientName?: string;
+}) {
+  if (projects.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-8 border-t border-line pt-14">
+      <Meta size="lg">{clientName ? `More for ${clientName}` : "Related work"}</Meta>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((p) => (
+          <ProjectCard key={p.id} project={p} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
+===== FILE: src\components\work\EmptyState.tsx =====
+
+// src/components/work/EmptyState.tsx
+import { Button } from "../primitives/Button";
+import { Meta } from "../primitives/Meta";
+
+export function EmptyState({ query, onReset }: { query: string; onReset: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-5 rounded-card border border-dashed border-line px-6 py-24 text-center">
+      <Meta size="lg">No results</Meta>
+      <p className="max-w-sm text-fg-muted">
+        {query
+          ? `Nothing matches “${query}” in this category.`
+          : "There's no work in this category yet."}
+      </p>
+      <Button onClick={onReset}>Clear filters</Button>
+    </div>
+  );
+}
+
+
+===== FILE: src\components\work\FilterBar.tsx =====
+
+// src/components/work/FilterBar.tsx
+import { FILTERS, FILTER_LABELS, type Filter } from "../../types";
+import { TogglePill } from "../primitives/Pill";
+import { Meta } from "../primitives/Meta";
+import { cn } from "../../lib/cn";
+import type { ViewMode } from "../../hooks/useFilters";
+
+export function FilterBar({
+  type,
+  view,
+  query,
+  count,
+  onType,
+  onView,
+  onQuery,
+  sticky = false,
+}: {
+  type: Filter;
+  view: ViewMode;
+  query: string;
+  count: number;
+  onType: (t: Filter) => void;
+  onView: (v: ViewMode) => void;
+  onQuery: (q: string) => void;
+  sticky?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between",
+        // top-24, not top-0 — the old build's filter bar slid under the fixed
+        // header because it was pinned to the viewport edge
+        sticky && "sticky top-20 z-30 -mx-6 border-y border-line bg-bg/85 px-6 backdrop-blur-xl"
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          role="group"
+          aria-label="Filter by type"
+          className="scrollbar-hide flex gap-2 overflow-x-auto"
+        >
+          {FILTERS.map((f) => (
+            <TogglePill key={f} active={type === f} onClick={() => onType(f)}>
+              {FILTER_LABELS[f]}
+            </TogglePill>
+          ))}
+        </div>
+
+        <div
+          role="group"
+          aria-label="Layout"
+          className="hidden shrink-0 items-center gap-1 rounded-pill border border-line p-1 sm:flex"
+        >
+          <ViewButton
+            active={view === "grid"}
+            onClick={() => onView("grid")}
+            label="Grid view"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </ViewButton>
+          <ViewButton
+            active={view === "list"}
+            onClick={() => onView("list")}
+            label="List view"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </ViewButton>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Meta className="hidden shrink-0 sm:block">
+          {count} {count === 1 ? "project" : "projects"}
+        </Meta>
+
+        <div className="relative w-full lg:w-72">
+          <label htmlFor="work-search" className="sr-only">
+            Search projects
+          </label>
+          <svg
+            aria-hidden
+            className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-fg-subtle"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
+          <input
+            id="work-search"
+            type="search"
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            placeholder="Search by title, client or tag"
+            className="h-11 w-full rounded-pill border border-line bg-card pl-11 pr-4 font-mono text-meta-lg text-fg placeholder:text-fg-subtle focus:border-line-strong"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ViewButton({
+  active,
+  onClick,
+  label,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "flex size-9 items-center justify-center rounded-pill transition-colors",
+        active ? "bg-fg text-bg" : "text-fg-subtle hover:text-fg"
+      )}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        {children}
+      </svg>
+    </button>
+  );
+}
+
+
+===== FILE: src\components\work\HoverPreview.tsx =====
+
+// src/components/work/HoverPreview.tsx
+import type { ResolvedProject } from "../../types";
+import { cld } from "../../lib/media";
+import { cn } from "../../lib/cn";
+
+/**
+ * The floating card that trails the cursor in list view.
+ *
+ * This interaction works better here than on the site it came from: there the
+ * previews were screenshots of web apps, here they're the actual posters and
+ * frames — the work itself, shown at the moment someone reads its name.
+ *
+ * pointer-events-none is essential, or the card sits under the cursor and
+ * steals the hover from the row that spawned it.
+ */
+export function HoverPreview({
+  project,
+  nodeRef,
+}: {
+  project: ResolvedProject | null;
+  nodeRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div
+      ref={nodeRef}
+      aria-hidden
+      className="pointer-events-none fixed left-0 top-0 z-40 hidden sm:block"
+    >
+      <div
+        className={cn(
+          "-translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-card border border-line-strong",
+          "bg-card shadow-2xl transition-all duration-300 ease-out",
+          project ? "scale-100 opacity-100" : "scale-90 opacity-0"
+        )}
+        style={{ width: 300, height: 200 }}
+      >
+        {project && (
+          <img
+            src={cld(project.thumbnail.url, { width: 600, height: 400, crop: "fill" })}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+===== FILE: src\components\work\ProjectCard.tsx =====
+
+// src/components/work/ProjectCard.tsx
+import { Link } from "react-router-dom";
+import type { ResolvedProject } from "../../types";
+import { Image } from "../primitives/Image";
+import { Meta } from "../primitives/Meta";
+
+/** Sensible ratio before the real dimensions get backfilled, so nothing jumps. */
+const FALLBACK_ASPECT: Record<ResolvedProject["type"], [number, number]> = {
+  video: [16, 9],
+  graphic: [4, 5],
+  social: [1, 1],
+};
+
+/**
+ * A real <Link>, not a <div onClick>. The old card was a div, so it was
+ * invisible to keyboards and to screen readers — the whole gallery was
+ * unreachable without a mouse.
+ */
+export function ProjectCard({
+  project,
+  onOpen,
+}: {
+  project: ResolvedProject;
+  /** When supplied, a plain click opens the lightbox instead of navigating. */
+  onOpen?: (p: ResolvedProject) => void;
+}) {
+  const [fw, fh] = FALLBACK_ASPECT[project.type];
+  const width = project.thumbnail.width ?? fw;
+  const height = project.thumbnail.height ?? fh;
+
+  return (
+    <Link
+      to={`/works/${project.slug}`}
+      onClick={(e) => {
+        // Let modifier-clicks and middle-clicks open the real page in a tab.
+        if (!onOpen || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        onOpen(project);
+      }}
+      className="group block focus-visible:ring-offset-4"
+    >
+      <div className="relative overflow-hidden rounded-card border border-line transition-colors duration-300 group-hover:border-line-strong">
+        <Image
+          src={project.thumbnail.url}
+          alt={project.title}
+          width={width}
+          height={height}
+          className="transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        />
+
+        <div
+          aria-hidden
+          className="absolute inset-0 flex items-center justify-center bg-bg/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        >
+          <span className="flex size-14 items-center justify-center rounded-pill bg-accent text-on-accent">
+            {project.type === "video" ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M7 17 17 7M9 7h8v8" />
+              </svg>
+            )}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-1.5">
+        <Meta>
+          {[project.client?.name, project.year, project.type].filter(Boolean).join(" · ")}
+        </Meta>
+        <h3 className="text-display-xs transition-colors group-hover:text-accent-ink">
+          {project.title}
+        </h3>
+      </div>
+    </Link>
+  );
+}
+
+
+===== FILE: src\components\work\ProjectGrid.tsx =====
+
+// src/components/work/ProjectGrid.tsx
+import type { ResolvedProject } from "../../types";
+import { ProjectCard } from "./ProjectCard";
+import { Reveal } from "../primitives/Reveal";
+
+/**
+ * A real CSS grid, not the old column-masonry. Each card keeps its own aspect
+ * ratio so the page still reads as varied, but rows align and — crucially —
+ * nothing reflows as images arrive.
+ */
+export function ProjectGrid({
+  projects,
+  onOpen,
+}: {
+  projects: ResolvedProject[];
+  onOpen?: (p: ResolvedProject) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      {projects.map((p, i) => (
+        // Stagger caps out after the first row; beyond that it reads as lag
+        <Reveal key={p.id} delay={Math.min(i, 3) * 70}>
+          <ProjectCard project={p} onOpen={onOpen} />
+        </Reveal>
+      ))}
+    </div>
+  );
+}
+
+
+===== FILE: src\components\work\ProjectList.tsx =====
+
+// src/components/work/ProjectList.tsx
+import { Link } from "react-router-dom";
+import type { ResolvedProject } from "../../types";
+import { Meta } from "../primitives/Meta";
+import { Pill } from "../primitives/Pill";
+import { HoverPreview } from "./HoverPreview";
+import { useHoverPreview } from "../../hooks/useHoverPreview";
+
+export function ProjectList({
+  projects,
+  onOpen,
+}: {
+  projects: ResolvedProject[];
+  onOpen?: (p: ResolvedProject) => void;
+}) {
+  const { active, nodeRef, show, hide } = useHoverPreview();
+
+  return (
+    <>
+      <ul className="border-t border-line" onMouseLeave={hide}>
+        {projects.map((project, i) => (
+          <ProjectRow
+            key={project.id}
+            project={project}
+            index={i + 1}
+            onEnter={() => show(project)}
+            onOpen={onOpen}
+          />
+        ))}
+      </ul>
+      <HoverPreview project={active} nodeRef={nodeRef} />
+    </>
+  );
+}
+
+function ProjectRow({
+  project,
+  index,
+  onEnter,
+  onOpen,
+}: {
+  project: ResolvedProject;
+  index: number;
+  onEnter: () => void;
+  onOpen?: (p: ResolvedProject) => void;
+}) {
+  return (
+    <li className="border-b border-line">
+      <Link
+        to={`/works/${project.slug}`}
+        onClick={(e) => {
+          if (!onOpen || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          onOpen(project);
+        }}
+        onMouseEnter={onEnter}
+        // Focus fires the preview too, so keyboard users get the same signal
+        onFocus={onEnter}
+        className="group grid grid-cols-[auto_1fr_auto] items-center gap-x-6 gap-y-3 px-2 py-7 transition-colors duration-300 hover:bg-card md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,1fr)_auto] md:px-6"
+      >
+        <Meta className="tabular-nums">
+          {String(index).padStart(2, "0")} /
+        </Meta>
+
+        <div className="min-w-0">
+          <h3 className="truncate text-display-sm transition-colors group-hover:text-accent-ink">
+            {project.title}
+          </h3>
+          <Meta className="mt-2 block md:hidden">
+            {[project.client?.name, project.year].filter(Boolean).join(" · ")}
+          </Meta>
+        </div>
+
+        <p className="col-span-3 hidden max-w-md text-body-sm text-fg-muted md:col-span-1 md:block">
+          {project.summary}
+        </p>
+
+        <div className="col-span-3 flex items-center justify-between gap-4 md:col-span-1 md:justify-end">
+          <div className="hidden flex-wrap gap-2 lg:flex">
+            {project.client && <Pill>{project.client.name}</Pill>}
+            {project.tags.slice(0, 1).map((t) => (
+              <Pill key={t}>{t}</Pill>
+            ))}
+          </div>
+
+          <span
+            aria-hidden
+            className="flex size-11 shrink-0 items-center justify-center rounded-pill border border-line text-fg-subtle transition-colors duration-300 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M7 17 17 7M9 7h8v8" />
+            </svg>
+          </span>
+        </div>
+      </Link>
+    </li>
+  );
+}
+
+
+===== FILE: src\components\work\ProjectModal.tsx =====
+
+// src/components/work/ProjectModal.tsx
+import { useCallback, useEffect, useRef } from "react";
+import type { ResolvedProject } from "../../types";
+import { cld, youTubeEmbed } from "../../lib/media";
+import { Meta } from "../primitives/Meta";
+import { Pill } from "../primitives/Pill";
+
+/**
+ * Opens over the grid instead of navigating to a page.
+ *
+ * It's driven by a `?p=<slug>` search param rather than component state, so:
+ *  - the back button closes it (including Android's system back)
+ *  - the open view is a real, shareable URL
+ *  - reloading keeps it open
+ *
+ * /works/<slug> still exists as a prerendered page — it's what link previews
+ * and search engines read, and what a Cmd-click on a card opens — but it is
+ * deliberately not surfaced from here. Everything a visitor needs is in this
+ * view.
+ *
+ * Media is sized with `fit-screen`, so an image is always visible in one
+ * screen — no scrolling to see the work.
+ */
+export function ProjectModal({
+  project,
+  onClose,
+  onPrev,
+  onNext,
+  hasPrev,
+  hasNext,
+}: {
+  project: ResolvedProject;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  hasPrev: boolean;
+  hasNext: boolean;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const restoreTo = useRef<HTMLElement | null>(null);
+
+  const onKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") return onClose();
+      if (e.key === "ArrowLeft" && hasPrev) return onPrev();
+      if (e.key === "ArrowRight" && hasNext) return onNext();
+      if (e.key !== "Tab") return;
+
+      // Focus trap. The old lightbox had none, so Tab wandered into the page
+      // behind the overlay.
+      const nodes = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!nodes?.length) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [onClose, onPrev, onNext, hasPrev, hasNext]
+  );
+
+  useEffect(() => {
+    restoreTo.current = document.activeElement as HTMLElement;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    closeRef.current?.focus();
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      restoreTo.current?.focus?.();
+    };
+  }, [onKey]);
+
+  const meta = [project.client?.name, project.year, project.type].filter(Boolean).join(" · ");
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={project.title}
+      className="fixed inset-0 z-[60] flex animate-fade flex-col bg-bg/95 backdrop-blur-xl"
+    >
+      {/* Backdrop click closes. A real button so it isn't a click handler on a div. */}
+      <button
+        type="button"
+        aria-label="Close"
+        tabIndex={-1}
+        onClick={onClose}
+        className="absolute inset-0 cursor-default"
+      />
+
+      <div ref={panelRef} className="relative flex h-full flex-col">
+        {/* Top bar */}
+        <div className="flex shrink-0 items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
+          <Meta tone="accent" className="truncate">
+            {meta}
+          </Meta>
+          <div className="flex items-center gap-2">
+            <NavBtn onClick={onPrev} disabled={!hasPrev} label="Previous project">
+              <path d="M15 5 8 12l7 7" />
+            </NavBtn>
+            <NavBtn onClick={onNext} disabled={!hasNext} label="Next project">
+              <path d="m9 5 7 7-7 7" />
+            </NavBtn>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="flex size-10 items-center justify-center rounded-pill border border-line bg-card text-fg transition-colors hover:border-accent hover:bg-accent hover:text-on-accent"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Media — always fits the screen */}
+        <div className="flex min-h-0 flex-1 items-center justify-center px-4 sm:px-6">
+          {project.type === "video" ? (
+            <div className="aspect-video w-full max-w-5xl overflow-hidden rounded-card border border-line bg-card">
+              <iframe
+                src={youTubeEmbed(project.media.embedUrl)}
+                title={project.title}
+                allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="h-full w-full"
+              />
+            </div>
+          ) : (
+            <img
+              src={cld(
+                project.type === "graphic" ? project.media.fullUrl : project.thumbnail.url,
+                { width: 1400 }
+              )}
+              alt={project.title}
+              className="fit-screen rounded-card"
+            />
+          )}
+        </div>
+
+        {/* Caption bar. Single column now — it was a two-column layout built
+            around a button that no longer exists, which left dead space. */}
+        <div className="shrink-0 border-t border-line bg-bg/80 px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-5xl flex-col gap-1">
+            <h2 className="truncate font-display text-display-xs font-bold text-fg">
+              {project.title}
+            </h2>
+            {project.summary && (
+              <p className="line-clamp-1 max-w-prose text-body-sm text-fg-muted sm:line-clamp-2">
+                {project.summary}
+              </p>
+            )}
+            {project.tags.length > 0 && (
+              <div className="mt-1.5 hidden flex-wrap gap-2 sm:flex">
+                {project.tags.slice(0, 3).map((t) => (
+                  <Pill key={t}>{t}</Pill>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NavBtn({
+  onClick,
+  disabled,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="flex size-10 items-center justify-center rounded-pill border border-line text-fg-subtle transition-colors hover:border-line-strong hover:text-fg disabled:opacity-30"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        {children}
+      </svg>
+    </button>
+  );
+}
+
+===== FILE: src\components\work\WorkSection.tsx =====
+
+// src/components/work/WorkSection.tsx
+import { Link } from "react-router-dom";
+import { projects } from "../../lib/content";
+import { ProjectGrid } from "./ProjectGrid";
+import { SectionHeader } from "../primitives/SectionHeader";
+import { Meta } from "../primitives/Meta";
+import { ProjectModal } from "./ProjectModal";
+import { useProjectModal } from "../../hooks/useProjectModal";
+
+/**
+ * The home-page slice: the six most recent, no filters. Filtering belongs on
+ * the archive page — putting controls here invites people to fiddle instead of
+ * scrolling on to the rest of the story.
+ *
+ * The old build showed `slice(0, 3)` of the raw array, which was whichever
+ * three happened to be first in the file rather than the three worth showing.
+ */
+export function WorkSection() {
+  const featured = projects.slice(0, 6);
+  const modal = useProjectModal(featured);
+
+  return (
+    <section id="work" className="scroll-mt-24 px-6 py-section-lg">
+      <div className="mx-auto flex max-w-shell flex-col gap-14">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <SectionHeader
+            index="02"
+            label="Selected work"
+            before="Things I've"
+            emphasis="made"
+            after=" & shipped."
+          />
+          <Link
+            to="/works"
+            className="group hidden shrink-0 items-center gap-2 pb-2 md:inline-flex"
+          >
+            <Meta tone="accent">View all {projects.length}</Meta>
+            <span aria-hidden className="text-accent-ink transition-transform group-hover:translate-x-1">
+              →
+            </span>
+          </Link>
+        </div>
+
+        <ProjectGrid projects={featured} onOpen={modal.open} />
+
+        <Link
+          to="/works"
+          className="inline-flex items-center justify-center gap-2 border-t border-line pt-8 md:hidden"
+        >
+          <Meta tone="accent">View all {projects.length} projects →</Meta>
+        </Link>
+      </div>
+
+      {modal.project && (
+        <ProjectModal
+          project={modal.project}
+          onClose={modal.close}
+          onPrev={modal.prev}
+          onNext={modal.next}
+          hasPrev={modal.hasPrev}
+          hasNext={modal.hasNext}
+        />
+      )}
+    </section>
+  );
+}
+
+
+===== FILE: src\data\clients.json =====
+
+[
+  {
+    "id": "a2sv",
+    "name": "A2SV",
+    "logoUrl": "https://a2sv.org/logos/logo-white.svg",
+    "showInMarquee": true
+  },
+  {
+    "id": "skillbridge",
+    "name": "SkillBridge",
+    "logoUrl": "data:image/webp;base64,UklGRlIIAABXRUJQVlA4WAoAAAAQAAAAFQEAKQAAQUxQSFgFAAABHIEAwf82DxExAWCfkmjbNiTpRpTVtm3btm3btm3btm3btm0rnXfwf0X8GkWuHkXEBEjLtidsrlcCEpBQCZFQBycOTh0MB6sD5mCfAyRUQiQgIT8IgdIJiIgJwP+gepwgn0Nwqd4Hv3n/XR5XPpHPIFap8Yd+M3L75UW1E+oWT09Wb+wVNxU+XtY2k59VC6234t5fqnc93NkhhSWr5maUz7RkSFxv8UWbuucbumXRrZmY6KaaD63S+sHKx1z37b2Sh7D2ic/+LLvH56C1e/sko35EyctoURP4nXN+71snkmkEMkOzUbsZgdrNRaZrI+fmCeQMnkimEcgZZtCRc35z7Gzk3iboY1Zdds+N1f4Z1X7tEx4Fw6t2hY2kppHVpKZoWwzWNnuimq6i3vqlDqv34tj5aCsGqfd6xYFX1W4hQ9Sdh4p1Wujl2YIZL1D9s5LKjtNbxqKaEh+nqu8ZqrLfpaovT7zUu0LYZ/68dCtn5b8UXb9N/HMKtPVV1IKGeSxbjF+gxxRVuk9zL4p6Lyygn3xZWA8o+5Mkv8zOGrfJ3hd2r+D5enVQsjSdH1Bsq+a5sTAUxRA8qaSUxKiuKlKtsoC+O6JuXgGx4wDhT0hyRRqIgSmKVqxRo0K2WBoABPb7Q9KWVEUMihIR6CgZQy81+VEJQKiNugqAKI3GaaWUjpLBata00/Ep8AluHETS1UaD4mxfSc5XkUJyBbg9YggeB2nqENigaQCQrGKIIRH++0LukZwM9WXc5O/4CmJIVPI+hdXk55G2eSwb8RachgYApCZhreR3Sf4IkYUmSRZ50ugy/QTJVwXM4bikzXGEWYyCZ105F20lui4ifmsruCdYO4DDEMypyZwQ4wlJHocYe/E7m93ukNu/HsguYCRJvkhnroQB1ddAnx7WzxEuL98EMQ4Ap/E3qTthNsX9QuJ75L/vlH90kT+KC70EHtFNYYQRPabU8CO0HnMOrJEAfIxs7JxyXiHJb8lhYTbpLBj3nGRTeHsvedMfQH+JK7c5tBBHDTM0PSwzp9Ko0oQr4rZqMIBkFENVVVaoRulpAIHPyKOtm88T3L2bNXtHMj2AERL2VgDQKZYeLuZqaHwWA8Bp/HlqqU3GbaQmAWCjhjmCyb1kNwBE+0YurVxxqPC7foWKt0mWATBdNlMJgO1rZBeQrPIDdkM8BaWptwUxKgAEQ9NSXWUfNSDgOXmyXq25gmdQzbpvSaYHsEk221wOCcKUIIbuz+MZR6P/7gl0qZkbFEOPlUrJ3OEAlpOOtsWfCryQb5yXfKIDOC3rZ+7595KYuRjnANiSMO1LZvSQuXn+xxCPahQfGfpNPM1bo0GWSs4TyNyG4n6RMCuAJG9Ieij3kPRUBRD0WuLObioHjdMIiqFpWpc9dva42YdqqJYFDtin1fV18xCmyAYCQO6nNG5vDwDFPZLtmqkexgRDZGn8CScG0joJ/c96ofcltzQAiDf+rwHb5swQl1B8lwGmrxuSOIZilV9wYATXIoXgPZdD8ksC2wjAiDezj9y+c+PI0kvHIE3jFF7kgfkSK753agqYQJY87koBY+G8r14nYXArHUlxDcQc/pzk+2ySE2uh6bqmobUthhDrLsnvk2NB7bZzYt7wc0PciHZmphgwOdBx7KFZORAn3iMWzviD5OtyAEJtdSGP7aoCIOl1kt7isOidPSS5KW9AOWeqSHB3CrJO+UOSc2HVAyYL5IPHHyqkSxg3VtzEGUsfe3fTS3FbgGUD+joFpd4FAbDyeY6r8T6ppMPa+5Xb+NOU+1CjIPgAgwv2XnnwwtO3b9++uLZ/5dAyseFT1DT8jwhWUDgg1AIAAFASAJ0BKhYBKgA+kUKZSqWjoiGk1A3gsBIJZQDUrdIJTtyeed9AG8Abxwv0tu6B22fagHSG9AD9OQn8KmcBEitICUsljlF+3oc+fBvQ5pNLTZ03tm0q6mYrCUgwlYyVTtmmg/GqrWA1Xe/M9TBLMsMQS8Uiv8TrpLxy2SKN59f5CjZXP7mXCLWW1PyAn1FGV7A1XlIMIiAvMPoAAOjsRPiZ9vPv7JMGCA4y3DvhKLmcYp9CoSnT3y92aq4oqDzmPUk1w7rrXdBzxslyELyRD7sfzXXYD1xFiZXtD48QyYPmmeHplv0UZpurTIT5shqWpx4KAu5WpmfGFskFAXLBN+/idEWPHjGxnct/GBoqz//wB5D3CnAsQDiDWhsfNUueXXoTRmkjgpYFN9oZlWOPPndd8vMtXwRZCS9IIzWE3m8/1L//of95f/83PzreHiNNKCBI2Vmk6dQcjYzWMhNWk9nHCE2K0HpexT2EaujS1H3xrm4hpeHKQPWY66L8YUGbMgxBT2OgtXlqA2ZmqeacpZy0aFEghBG4MIK773gKHQWHw2vOKmUgUvEd4KGt6Fyy16i40HHsDKuUT4YNOsBE5HrLI8evFpxjg0RsjjRw/I/f+edJBheoG31P5CPhZqgBA2BcvzbNH8mZbYTv5FKfYErFnypTB3ZOfmaF6eIScompMa+9l865IlYBe2K1SOCuqqvi+P++aBEpaQj8vIHy7/oPQ3EG+CaP++d2nCJCZ9z7fzr1n0ATuVMMJggAAADf2RHseCDMh3WoAcGjaUL3yb6Z7dP/5PUh8Yhiru5XVTMfpJNPPyn+cmPzW2+fOqYPVF888S70CvByDaHrPkqWN6//zxZBoKaz9ifPR7eLS2QIMFH2b2CcDZ3rPl1jo/jg77HOg8/+cyXZy2V/Sg7oJ98fvmlin7//8e/wB//zcgDoaCOz9I05hDq8HY/pf+35nKAAAAA=",
+    "showInMarquee": true
+  },
+  {
+    "id": "afrochat",
+    "name": "AfroChat",
+    "logoUrl": "https://afrochat.app/logo-small.svg",
+    "showInMarquee": true
+  },
+  {
+    "id": "rateeat",
+    "name": "RateEat",
+    "logoUrl": "https://rateeat.app/_next/static/media/Vector.ce834abb.png",
+    "showInMarquee": true
+  },
+  {
+    "id": "efoy",
+    "name": "Efoy",
+    "logoUrl": "https://efoynanny.com/wp-content/uploads/2023/04/photo_2023-04-29_15-25-08.jpg",
+    "showInMarquee": true
+  },
+  {
+    "id": "emagn",
+    "name": "Emagn",
+    "logoUrl": "https://emagn.com.ng/wp-content/uploads/2022/06/Emagn-logo.png",
+    "showInMarquee": true
+  },
+  {
+    "id": "ahadu",
+    "name": "Ahadu",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "kaf-productions",
+    "name": "KAF Productions",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "paramount",
+    "name": "Paramount Students",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "akil",
+    "name": "AKIL",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "yemuyaweg",
+    "name": "Yemuyaweg Initiative",
+    "logoUrl": "https://yemuyaweginitiative.com/logo.svg",
+    "showInMarquee": true
+  },
+  {
+    "id": "adot",
+    "name": "Adot",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "eskalate",
+    "name": "Eskalate",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "hulu-store",
+    "name": "Hulu Store",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "grace-africa",
+    "name": "Grace Africa",
+    "logoUrl": null,
+    "showInMarquee": false
+  },
+  {
+    "id": "alta-counselling",
+    "name": "Alta Counselling",
+    "logoUrl": null,
+    "showInMarquee": false
+  }
+]
+
+===== FILE: src\data\profile.json =====
+
+{
+  "name": "Kalkidan Birhanu",
+  "headline": "Video Editor & Graphic Designer",
+  "role": "Editor · Designer · Strategist",
+  "basedIn": "Addis Ababa, ET",
+  "available": "Available for freelance, full-time & collaborations",
+  "email": "bkalkidan982@gmail.com",
+  "resumeUrl": "/cv.pdf",
+  "reel": {
+    "videoUrl": null,
+    "posterUrl": null,
+    "fullVideoUrl": null
+  },
+  "keywords": [
+    "Video Editing",
+    "Graphic Design",
+    "Motion & Detail",
+    "Social Strategy",
+    "Brand Identity",
+    "Campaign Design"
+  ],
+  "socialLinks": [
+    {
+      "name": "LinkedIn",
+      "url": "https://www.linkedin.com/in/kalkidan-birhanu/"
+    },
+    {
+      "name": "Telegram",
+      "url": "https://t.me/kal982"
+    },
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com/@Kalkidan_Birhanu-s7r"
+    }
+  ],
+  "tools": [
+    {
+      "name": "Adobe Premiere Pro",
+      "slug": "adobepremierepro",
+      "group": "video",
+      "label": "EDIT",
+      "note": "Where most of the cutting happens.",
+      "color": "#9999FF",
+      "mono": "PP"
+    },
+    {
+      "name": "Adobe After Effects",
+      "slug": "adobeaftereffects",
+      "group": "video",
+      "label": "MOTION",
+      "note": "Motion, titles and clean-up.",
+      "color": "#9999FF",
+      "mono": "AE",
+      "featured": true
+    },
+    {
+      "name": "CapCut",
+      "slug": "capcut",
+      "group": "video",
+      "label": "SOCIAL",
+      "note": "Fast turnarounds for social.",
+      "color": "#EDEDED",
+      "mono": "CC"
+    },
+    {
+      "name": "Adobe Photoshop",
+      "slug": "adobephotoshop",
+      "group": "design",
+      "label": "PHOTO",
+      "note": "Retouching and composites.",
+      "color": "#31A8FF",
+      "mono": "PS"
+    },
+    {
+      "name": "Adobe Illustrator",
+      "slug": "adobeillustrator",
+      "group": "design",
+      "label": "VECTOR",
+      "note": "Logos, marks and vector work.",
+      "color": "#FF9A00",
+      "mono": "AI"
+    },
+    {
+      "name": "Figma",
+      "slug": "figma",
+      "group": "design",
+      "label": "LAYOUT",
+      "note": "Layout and handoff.",
+      "color": "#F24E1E",
+      "mono": "FI",
+      "featured": true
+    },
+    {
+      "name": "Canva",
+      "slug": "canva",
+      "group": "design",
+      "label": "TEMPLATES",
+      "note": "Templates the client can reuse.",
+      "color": "#00C4CC",
+      "mono": "CV"
+    }
+  ],
+  "services": [
+    {
+      "title": "Video Editing",
+      "desc": "High-retention cuts, color grading, and sound design."
+    },
+    {
+      "title": "Graphic Design",
+      "desc": "Thumbnails, posters, and brand identity systems."
+    },
+    {
+      "title": "Social Strategy",
+      "desc": "Content calendars and engagement growth."
+    }
+  ],
+  "experience": [
+    {
+      "id": "a2sv",
+      "role": "Graphic Designer",
+      "company": "A2SV",
+      "clientId": "a2sv",
+      "start": "2025",
+      "end": "Present",
+      "dateLabel": "2025 — Present",
+      "description": "Design the visual identity for a pan-African tech and talent community — social campaigns, event graphics and recruitment assets.",
+      "tags": [
+        "Brand",
+        "Social",
+        "Events"
+      ],
+      "needsRewrite": true
+    },
+    {
+      "id": "efoy",
+      "role": "Social Media Manager",
+      "company": "Efoy Training Center",
+      "clientId": "efoy",
+      "start": "2025",
+      "end": "2025",
+      "dateLabel": "May — Oct 2025",
+      "description": "Ran the full content operation for a childcare training centre: strategy, graphics and video, built around practical parenting education.",
+      "tags": [
+        "Strategy",
+        "Video",
+        "Graphics"
+      ],
+      "needsRewrite": true
+    },
+    {
+      "id": "yemuyaweg",
+      "role": "Graphic Designer",
+      "company": "YeMuyaWeg",
+      "clientId": "yemuyaweg",
+      "start": "2025",
+      "end": "2025",
+      "dateLabel": "Mar — Jul 2025",
+      "description": "Designed the campaign visuals for a community awareness initiative, volunteer.",
+      "tags": [
+        "Campaign",
+        "Volunteer"
+      ],
+      "needsRewrite": true
+    },
+    {
+      "id": "paramount",
+      "role": "Video Editor",
+      "company": "Paramount Students",
+      "clientId": "paramount",
+      "start": "2024",
+      "end": "2024",
+      "dateLabel": "Jan — Apr 2024",
+      "description": "Edited video content for a student media department, from rushes through to final delivery.",
+      "tags": [
+        "Editing",
+        "Post"
+      ],
+      "needsRewrite": true
+    }
+  ],
+  "aboutIntro": "From student media rooms to leading brand design for a pan-African tech community. Every role added a tool; what stayed the same was the question — what is this supposed to make someone feel?",
+  "channels": [
+    {
+      "id": "telegram",
+      "name": "Telegram",
+      "handle": "@kal982",
+      "url": "https://t.me/kal982",
+      "purpose": "Fastest reply. Best for quick questions and briefs.",
+      "primary": true
+    },
+    {
+      "id": "whatsapp",
+      "name": "WhatsApp",
+      "handle": null,
+      "url": null,
+      "purpose": "Voice notes and day-to-day back and forth.",
+      "primary": true
+    },
+    {
+      "id": "email",
+      "name": "Email",
+      "handle": "bkalkidan982@gmail.com",
+      "url": "mailto:bkalkidan982@gmail.com",
+      "purpose": "Briefs, quotes, contracts and anything with files attached.",
+      "primary": false
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "handle": "kalkidan-birhanu",
+      "url": "https://www.linkedin.com/in/kalkidan-birhanu/",
+      "purpose": "Experience, references and hiring conversations.",
+      "primary": false
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "handle": "@Kalkidan_Birhanu-s7r",
+      "url": "https://www.youtube.com/@Kalkidan_Birhanu-s7r",
+      "purpose": "Longer edits and full cuts.",
+      "primary": false
+    }
+  ],
+  "responseTime": "Usually replies within a day"
+}
+
+===== FILE: src\data\projects.json =====
+
+[
+  {
+    "id": "img-3",
+    "slug": "adot-new-feature",
+    "type": "graphic",
+    "title": "Adot New Feature",
+    "clientId": "adot",
+    "date": "2026-01-01",
+    "year": 2026,
+    "summary": "A poster for Adot new feature.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "newFeature",
+      "Adot"
+    ],
+    "featured": false,
+    "order": 0,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Adot_New_feature_kal_i0dkle.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Adot_New_feature_kal_i0dkle.png"
+    }
+  },
+  {
+    "id": "img-2",
+    "slug": "2026-celebration-poster",
+    "type": "graphic",
+    "title": "2026 Celebration Poster",
+    "clientId": "skillbridge",
+    "date": "2026-01-01",
+    "year": 2026,
+    "summary": "A poster for Skill Bridge 2026 celebration.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "celebration",
+      "skillBridge"
+    ],
+    "featured": false,
+    "order": 1,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824695/3_ql3wzr.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824695/3_ql3wzr.png"
+    }
+  },
+  {
+    "id": "img-1",
+    "slug": "happy-new-year-poster",
+    "type": "graphic",
+    "title": "Happy new Year poster",
+    "clientId": "rateeat",
+    "date": "2026-01-01",
+    "year": 2026,
+    "summary": "Celebrating the new year with RateEat",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Branding",
+      "Print"
+    ],
+    "featured": false,
+    "order": 2,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824698/1_vkp5vn.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824698/1_vkp5vn.png"
+    }
+  },
+  {
+    "id": "img-6",
+    "slug": "global-talent-map",
+    "type": "graphic",
+    "title": "Global Talent Map",
+    "clientId": "eskalate",
+    "date": "2025-10-02",
+    "year": 2025,
+    "summary": "Global Talent Map",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Eskalate"
+    ],
+    "featured": false,
+    "order": 3,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824690/Global_talent_map_u9lx1j.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824690/Global_talent_map_u9lx1j.png"
+    }
+  },
+  {
+    "id": "img-5",
+    "slug": "akil-oct",
+    "type": "graphic",
+    "title": "Akil Oct",
+    "clientId": "akil",
+    "date": "2025-10-02",
+    "year": 2025,
+    "summary": "Akil Oct",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Akil"
+    ],
+    "featured": false,
+    "order": 4,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824692/Akil_oct_gmbzqv.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824692/Akil_oct_gmbzqv.png"
+    }
+  },
+  {
+    "id": "img-7",
+    "slug": "black-circle-icon-business-logo",
+    "type": "graphic",
+    "title": "Black Circle Icon Business Logo",
+    "clientId": "hulu-store",
+    "date": "2025-09-02",
+    "year": 2025,
+    "summary": "Black Circle Icon Business Logo",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Hulu Store"
+    ],
+    "featured": false,
+    "order": 5,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824687/Black_Circle_Icon_Business_Logo_w4oezs.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824687/Black_Circle_Icon_Business_Logo_w4oezs.png"
+    }
+  },
+  {
+    "id": "img-9",
+    "slug": "efoy",
+    "type": "graphic",
+    "title": "Efoy",
+    "clientId": "efoy",
+    "date": "2025-08-10",
+    "year": 2025,
+    "summary": "Efoy",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Efoy"
+    ],
+    "featured": false,
+    "order": 6,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png"
+    }
+  },
+  {
+    "id": "img-8",
+    "slug": "grace-africa",
+    "type": "graphic",
+    "title": "Grace Africa",
+    "clientId": "grace-africa",
+    "date": "2025-08-10",
+    "year": 2025,
+    "summary": "Grace Africa",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Grace Africa"
+    ],
+    "featured": false,
+    "order": 7,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824684/1_1_dce1qs.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824684/1_1_dce1qs.png"
+    }
+  },
+  {
+    "id": "img-12",
+    "slug": "blue-modern-social-media-marketing-instagram-post",
+    "type": "graphic",
+    "title": "Blue Modern Social Media Marketing Instagram Post",
+    "clientId": "alta-counselling",
+    "date": "2025-07-10",
+    "year": 2025,
+    "summary": "Blue Modern Social Media Marketing Instagram Post",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Alta Counselling"
+    ],
+    "featured": false,
+    "order": 8,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824674/Copy_of_Copy_of_Blue_Modern_Social_Media_Marketing_Instagram_Post_ozugiw.jpg",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824674/Copy_of_Copy_of_Blue_Modern_Social_Media_Marketing_Instagram_Post_ozugiw.jpg"
+    }
+  },
+  {
+    "id": "img-11",
+    "slug": "afrochat-graphics",
+    "type": "graphic",
+    "title": "Afrochat Graphics",
+    "clientId": "afrochat",
+    "date": "2025-07-10",
+    "year": 2025,
+    "summary": "Afrochat Graphics",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Afrochat"
+    ],
+    "featured": false,
+    "order": 9,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824672/Afrochat_Graphics_July_lyqgy1.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824672/Afrochat_Graphics_July_lyqgy1.png"
+    }
+  },
+  {
+    "id": "vid-2",
+    "slug": "greed-grows-quieter",
+    "type": "video",
+    "title": "Greed Grows Quieter",
+    "clientId": "kaf-productions",
+    "date": "2025-07-04",
+    "year": 2025,
+    "summary": "A poem about greed and its consequences.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "GreedPoetry",
+      "PoetryFilm",
+      "KalkidanBirhanu",
+      "DarkPoetry"
+    ],
+    "featured": true,
+    "order": 10,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dujakhrdm/image/upload/v1768147828/VD_xaoh9f.jpg",
+      "width": null,
+      "height": null
+    },
+    "subtitle": "A Darker Chapter in the Poetic Journey",
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/embed/pCV3evS6W2M?si=vxPjXMkaN1fkaKJF",
+      "format": "widescreen"
+    },
+    "caseStudy": {
+      "brief": "[What did the client need, and why?]",
+      "approach": "[What did you actually do — the decisions, not the software?]",
+      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
+    },
+    "links": [],
+    "gallery": []
+  },
+  {
+    "id": "vid-1",
+    "slug": "cinematic-intro",
+    "type": "video",
+    "title": "Cinematic Intro",
+    "clientId": "ahadu",
+    "date": "2025-07-03",
+    "year": 2025,
+    "summary": "A short cinematic intro created and edited to showcase video editing skills.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "CinematicIntro",
+      "MotionDesign",
+      "Intro"
+    ],
+    "featured": true,
+    "order": 11,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dujakhrdm/image/upload/v1768147828/VD_xaoh9f.jpg",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/embed/DeN55E3YwK8?si=DFNHBRJIgZSoTX1e",
+      "format": "widescreen"
+    },
+    "caseStudy": {
+      "brief": "[What did the client need, and why?]",
+      "approach": "[What did you actually do — the decisions, not the software?]",
+      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
+    },
+    "links": [],
+    "gallery": []
+  },
+  {
+    "id": "img-4",
+    "slug": "afrochat-graphics-2",
+    "type": "graphic",
+    "title": "Afrochat Graphics",
+    "clientId": "afrochat",
+    "date": "2025-07-02",
+    "year": 2025,
+    "summary": "Afrochat Graphics",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Afrochat"
+    ],
+    "featured": false,
+    "order": 12,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Afrochat_Graphics_July_2_knbuhu.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Afrochat_Graphics_July_2_knbuhu.png"
+    }
+  },
+  {
+    "id": "img-10",
+    "slug": "yemuya-weg",
+    "type": "graphic",
+    "title": "Yemuya Weg",
+    "clientId": "yemuyaweg",
+    "date": "2025-05-10",
+    "year": 2025,
+    "summary": "Yemuya Weg",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Yemuya Weg"
+    ],
+    "featured": false,
+    "order": 13,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824675/15_vc721w.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png"
+    }
+  }
+]
+
+===== FILE: src\dev\UploadTool.tsx =====
+
+// src/dev/UploadTool.tsx
+//
+// DEVELOPMENT ONLY. The route that mounts this is wrapped in
+// import.meta.env.DEV in routes.tsx, so Vite tree-shakes the whole file —
+// and the Cloudinary credentials it reads — out of any production build.
+//
+// The old version of this page had a VITE_PIN "gate" that was inlined into the
+// bundle and readable in devtools in about ten seconds. It has been removed
+// rather than replaced: the fix is not shipping the tool at all.
+//
+// It also finishes the job the old one started. That one handed you a URL and
+// you hand-wrote the rest of the entry, which is exactly where "Skill Bridge"
+// vs "SkillBridge" and the duplicate slugs came from. This one reads the
+// dimensions from Cloudinary's response, offers existing clients and tags as
+// pickers, and emits a complete, valid entry.
+
+import { useMemo, useState } from "react";
+import { clients, projects } from "../lib/content";
+import { Button } from "../components/primitives/Button";
+import { Meta } from "../components/primitives/Meta";
+import { CopyButton } from "../components/primitives/CopyButton";
+import type { ProjectType } from "../types";
+
+const CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+type Uploaded = { url: string; width: number; height: number; name: string };
+
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/[\s_-]+/g, "-");
+
+export default function UploadTool() {
+  const [file, setFile] = useState<Uploaded | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [title, setTitle] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [type, setType] = useState<ProjectType>("graphic");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [summary, setSummary] = useState("");
+  const [role, setRole] = useState("");
+  const [tools, setTools] = useState("");
+  const [tags, setTags] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [featured, setFeatured] = useState(false);
+
+  const existingTags = useMemo(
+    () => [...new Set(projects.flatMap((p) => p.tags))].sort(),
+    []
+  );
+
+  const upload = async (f: File) => {
+    if (!CLOUD || !PRESET) {
+      setError("Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in .env");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const body = new FormData();
+      body.append("file", f);
+      body.append("upload_preset", PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`, {
+        method: "POST",
+        body,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message ?? "Upload failed");
+      // width/height come back free — this is what kills the layout shift
+      setFile({ url: data.secure_url, width: data.width, height: data.height, name: f.name });
+      if (!title) setTitle(f.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const entry = useMemo(() => {
+    if (!file && type !== "video") return null;
+    const slug = slugify(title || "untitled");
+    const base = {
+      id: `${type.slice(0, 3)}-${slug.slice(0, 20)}`,
+      slug,
+      type,
+      title: title || "Untitled",
+      clientId: clientId || null,
+      date,
+      year: Number(date.slice(0, 4)),
+      summary,
+      role: role.split(",").map((s) => s.trim()).filter(Boolean),
+      tools: tools.split(",").map((s) => s.trim()).filter(Boolean),
+      tags: tags.split(",").map((s) => s.trim()).filter(Boolean),
+      featured,
+      order: 0,
+      thumbnail: {
+        url: file?.url ?? "",
+        width: file?.width ?? null,
+        height: file?.height ?? null,
+      },
+      gallery: [],
+      caseStudy: null,
+      links: [],
+    };
+    const media =
+      type === "video"
+        ? { provider: "youtube", embedUrl: videoUrl, format: "widescreen" }
+        : type === "graphic"
+          ? { fullUrl: file?.url ?? "" }
+          : { platform: "Instagram", link: "", stats: null };
+    return { ...base, media };
+  }, [file, title, clientId, type, date, summary, role, tools, tags, videoUrl, featured]);
+
+  const json = entry ? JSON.stringify(entry, null, 2) : "";
+
+  const downloadAll = () => {
+    if (!entry) return;
+    const merged = [entry, ...projects.map(({ client: _c, ...p }) => p)].map((p, i) => ({
+      ...p,
+      order: i,
+    }));
+    const blob = new Blob([JSON.stringify(merged, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(a ? blob : blob);
+    a.download = "projects.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  return (
+    <div className="px-6 pb-24 pt-28">
+      <div className="mx-auto flex max-w-3xl flex-col gap-8">
+        <header className="flex flex-col gap-3">
+          <Meta tone="accent">Development only</Meta>
+          <h1 className="text-display-md">Add a project</h1>
+          <p className="text-body-sm text-fg-muted">
+            This page is stripped from production builds. Upload, fill in the
+            fields, then paste the result into{" "}
+            <code className="text-accent-ink">src/data/projects.json</code>.
+          </p>
+        </header>
+
+        <label className="flex cursor-pointer flex-col items-center gap-3 rounded-card border-2 border-dashed border-line bg-card px-6 py-14 text-center transition-colors hover:border-accent">
+          <input
+            type="file"
+            accept="image/*,video/*"
+            className="sr-only"
+            onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+          />
+          {busy ? (
+            <Meta tone="accent">Uploading…</Meta>
+          ) : file ? (
+            <>
+              <img src={file.url} alt="" className="max-h-40 rounded-card" />
+              <Meta>
+                {file.name} · {file.width}×{file.height}
+              </Meta>
+            </>
+          ) : (
+            <>
+              <Meta size="lg">Drop a file, or click to browse</Meta>
+              <Meta>Dimensions are read automatically</Meta>
+            </>
+          )}
+        </label>
+
+        {error && (
+          <p role="alert" className="text-body-sm text-red-400">
+            {error}
+          </p>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Text label="Title" value={title} onChange={setTitle} />
+          <Select
+            label="Client"
+            value={clientId}
+            onChange={setClientId}
+            options={[
+              { value: "", label: "— none —" },
+              ...clients.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+          <Select
+            label="Type"
+            value={type}
+            onChange={(v) => setType(v as ProjectType)}
+            options={[
+              { value: "graphic", label: "Graphic" },
+              { value: "video", label: "Video" },
+              { value: "social", label: "Social" },
+            ]}
+          />
+          <Text label="Date" value={date} onChange={setDate} type="date" />
+          {type === "video" && (
+            <Text
+              label="YouTube embed URL"
+              value={videoUrl}
+              onChange={setVideoUrl}
+              className="sm:col-span-2"
+            />
+          )}
+          <Text label="Summary" value={summary} onChange={setSummary} className="sm:col-span-2" />
+          <Text label="Role (comma separated)" value={role} onChange={setRole} />
+          <Text label="Tools (comma separated)" value={tools} onChange={setTools} />
+          <Text
+            label="Tags (comma separated)"
+            value={tags}
+            onChange={setTags}
+            className="sm:col-span-2"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Meta>Existing tags:</Meta>
+          {existingTags.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTags((v) => (v ? `${v}, ${t}` : t))}
+              className="rounded-pill border border-line px-3 py-1 font-mono text-meta uppercase text-fg-subtle hover:border-accent hover:text-accent-ink"
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        <label className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+            className="size-4 accent-[var(--color-accent)]"
+          />
+          <Meta tone="fg">Featured — gets the full case-study layout</Meta>
+        </label>
+
+        {json && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <Meta size="lg">Entry</Meta>
+              <div className="flex gap-2">
+                <CopyButton value={json} label="entry" />
+                <Button size="sm" onClick={downloadAll}>
+                  Download full projects.json
+                </Button>
+              </div>
+            </div>
+            <pre className="overflow-x-auto rounded-card border border-line bg-card p-5 font-mono text-meta text-fg">
+              {json}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Text({
+  label,
+  value,
+  onChange,
+  type = "text",
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  className?: string;
+}) {
+  const id = slugify(label);
+  return (
+    <div className={`flex flex-col gap-2 ${className ?? ""}`}>
+      <label htmlFor={id} className="font-mono text-meta uppercase text-fg-subtle">
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 rounded-card border border-line bg-surface px-3 text-body-sm text-fg focus:border-accent"
+      />
+    </div>
+  );
+}
+
+function Select({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const id = slugify(label);
+  return (
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="font-mono text-meta uppercase text-fg-subtle">
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 rounded-card border border-line bg-surface px-3 text-body-sm text-fg focus:border-accent"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+
+===== FILE: src\hooks\useFilters.ts =====
+
+// src/hooks/useFilters.ts
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
+import { FILTERS, type Filter } from "../types";
+
+export type ViewMode = "grid" | "list";
+
+const isFilter = (v: string | null): v is Filter =>
+  !!v && (FILTERS as readonly string[]).includes(v);
+
+/**
+ * Filter state lives in the URL, not in useState.
+ *
+ * The old build kept it in component state, which meant a filtered view
+ * couldn't be shared, the back button skipped past every filter change, and
+ * reloading the page threw the selection away. ?type=video&view=list&q=poster
+ * fixes all three for free.
+ *
+ * Grid is the default — unlike the site this is modelled on, the work here is
+ * visual, and hiding it behind a text row would be the wrong trade.
+ */
+export function useFilters() {
+  const [params, setParams] = useSearchParams();
+
+  const type: Filter = isFilter(params.get("type")) ? (params.get("type") as Filter) : "all";
+  const view: ViewMode = params.get("view") === "list" ? "list" : "grid";
+  const query = params.get("q") ?? "";
+
+  const update = useCallback(
+    (patch: Record<string, string | null>) => {
+      const next = new URLSearchParams(params);
+      for (const [k, v] of Object.entries(patch)) {
+        // Defaults are omitted so the canonical URL stays clean
+        if (!v || v === "all" || (k === "view" && v === "grid")) next.delete(k);
+        else next.set(k, v);
+      }
+      // replace, so typing in the search box doesn't fill the history stack
+      setParams(next, { replace: true, preventScrollReset: true });
+    },
+    [params, setParams]
+  );
+
+  const isFiltered = type !== "all" || query.trim() !== "";
+
+  return useMemo(
+    () => ({
+      type,
+      view,
+      query,
+      isFiltered,
+      setType: (t: Filter) => update({ type: t }),
+      setView: (v: ViewMode) => update({ view: v }),
+      setQuery: (q: string) => update({ q }),
+      reset: () => update({ type: null, q: null }),
+    }),
+    [type, view, query, isFiltered, update]
+  );
+}
+
+
+===== FILE: src\hooks\useHoverPreview.ts =====
+
+// src/hooks/useHoverPreview.ts
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useHasPointer } from "./useMediaQuery";
+import type { ResolvedProject } from "../types";
+
+/**
+ * Drives the floating preview that follows the cursor in list view.
+ *
+ * Position is written straight to the element's transform inside a rAF loop
+ * rather than through React state — re-rendering on every mousemove would
+ * drop frames. Only the active project is state.
+ *
+ * Returns nothing on touch devices: the grid is the touch experience.
+ */
+export function useHoverPreview() {
+  const hasPointer = useHasPointer();
+  const [active, setActive] = useState<ResolvedProject | null>(null);
+  const nodeRef = useRef<HTMLDivElement>(null);
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const frame = useRef<number>(0);
+
+  useEffect(() => {
+    if (!hasPointer || !active) return;
+
+    const onMove = (e: MouseEvent) => {
+      target.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("mousemove", onMove);
+
+    const tick = () => {
+      // Lerp toward the cursor so the card trails slightly instead of snapping
+      current.current.x += (target.current.x - current.current.x) * 0.18;
+      current.current.y += (target.current.y - current.current.y) * 0.18;
+      if (nodeRef.current) {
+        nodeRef.current.style.transform = `translate3d(${current.current.x}px, ${current.current.y}px, 0)`;
+      }
+      frame.current = requestAnimationFrame(tick);
+    };
+    frame.current = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(frame.current);
+    };
+  }, [hasPointer, active]);
+
+  const show = useCallback(
+    (p: ResolvedProject) => {
+      if (hasPointer) setActive(p);
+    },
+    [hasPointer]
+  );
+
+  const hide = useCallback(() => setActive(null), []);
+
+  return { enabled: hasPointer, active, nodeRef, show, hide };
+}
+
+
+===== FILE: src\hooks\useMediaQuery.ts =====
+
+// src/hooks/useMediaQuery.ts
+import { useEffect, useState } from "react";
+
+/** SSR-safe media query hook. Returns false during prerender. */
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    setMatches(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [query]);
+
+  return matches;
+}
+
+/** True only on devices with a real cursor — gates the hover preview. */
+export const useHasPointer = () => useMediaQuery("(pointer: fine)");
+
+export const usePrefersReducedMotion = () =>
+  useMediaQuery("(prefers-reduced-motion: reduce)");
+
+
+===== FILE: src\hooks\useProjectModal.ts =====
+
+// src/hooks/useProjectModal.ts
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
+import type { ResolvedProject } from "../types";
+
+/**
+ * The open project lives in `?p=<slug>`, not in component state.
+ *
+ * That gives us three things for free: the back button (and Android's system
+ * back) closes the modal, the open view is a shareable URL, and a reload keeps
+ * it open. Prev/next use `replace` so paging through ten projects doesn't
+ * leave ten entries in the history stack to walk back through.
+ */
+export function useProjectModal(list: ResolvedProject[]) {
+  const [params, setParams] = useSearchParams();
+  const slug = params.get("p");
+
+  const index = useMemo(
+    () => (slug ? list.findIndex((p) => p.slug === slug) : -1),
+    [slug, list]
+  );
+  const project = index >= 0 ? list[index] : null;
+
+  const goTo = useCallback(
+    (next: string | null, replace: boolean) => {
+      const q = new URLSearchParams(params);
+      if (next) q.set("p", next);
+      else q.delete("p");
+      setParams(q, { replace, preventScrollReset: true });
+    },
+    [params, setParams]
+  );
+
+  return {
+    project,
+    open: (p: ResolvedProject) => goTo(p.slug, false),
+    close: () => goTo(null, false),
+    prev: () => index > 0 && goTo(list[index - 1].slug, true),
+    next: () => index < list.length - 1 && goTo(list[index + 1].slug, true),
+    hasPrev: index > 0,
+    hasNext: index >= 0 && index < list.length - 1,
+  };
+}
+
+
+===== FILE: src\hooks\useReveal.ts =====
+
+// src/hooks/useReveal.ts
+import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "./useMediaQuery";
+
+/**
+ * Scroll-triggered reveal. Fires once, then disconnects — the old build ran six
+ * animations permanently, which is what made it read as cheap.
+ * Returns visible=true immediately when reduced motion is requested.
+ */
+export function useReveal<T extends HTMLElement = HTMLDivElement>(
+  options: { threshold?: number; rootMargin?: string } = {}
+) {
+  const { threshold = 0.15, rootMargin = "0px 0px -10% 0px" } = options;
+  const ref = useRef<T>(null);
+  const reduced = usePrefersReducedMotion();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (reduced) {
+      setVisible(true);
+      return;
+    }
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold, rootMargin }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [reduced, threshold, rootMargin]);
+
+  return { ref, visible };
+}
+
+
+===== FILE: src\hooks\useTheme.ts =====
+
+// src/hooks/useTheme.ts
+import { useCallback, useEffect, useState } from "react";
+
+export type Theme = "dark" | "light";
+
+const KEY = "theme";
+
+function current(): Theme {
+  if (typeof document === "undefined") return "dark";
+  return document.documentElement.getAttribute("data-theme") === "light"
+    ? "light"
+    : "dark";
+}
+
+/**
+ * Reads whatever the inline script in index.html already applied, so the hook
+ * never fights it and there is no flash. Writes go to both the DOM and storage.
+ */
+export function useTheme() {
+  const [theme, setThemeState] = useState<Theme>(current);
+
+  // Re-sync if the attribute is changed elsewhere (another tab, devtools).
+  useEffect(() => {
+    const observer = new MutationObserver(() => setThemeState(current()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const setTheme = useCallback((next: Theme) => {
+    document.documentElement.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem(KEY, next);
+    } catch {
+      /* storage unavailable — the theme still applies for this session */
+    }
+    setThemeState(next);
+  }, []);
+
+  const toggle = useCallback(
+    () => setTheme(theme === "dark" ? "light" : "dark"),
+    [theme, setTheme]
+  );
+
+  return { theme, setTheme, toggle };
+}
+
+
+===== FILE: src\index.css =====
+
+/* src/index.css — Tailwind v4
+ *
+ * There is no tailwind.config.js any more. The theme IS this file.
+ * Tokens declared in @theme become Tailwind utilities AND real CSS custom
+ * properties, so the light theme is just an override block further down.
+ */
+
+@import "tailwindcss";
+
+/* ── Fonts, all self-hosted ────────────────────────────────────────────────
+ * No Google Fonts request, no third-party dependency, no flash of fallback
+ * type. Five woff2 files, ~160kb total, cached forever by the host config.
+ *
+ * The display face ships as Epilogue, which has a true italic — required,
+ * because the accent word in every heading uses it and a browser-faked slant
+ * looks wrong at 90px.
+ *
+ * TO UPGRADE TO SATOSHI (the face we chose):
+ *   1. Download it from https://www.fontshare.com/fonts/satoshi
+ *   2. Rename the two variable files to Display-Variable.woff2 and
+ *      Display-VariableItalic.woff2 and drop them in /public/fonts
+ * Nothing else changes. Same filenames, same tokens, same everything.
+ */
+@font-face {
+  font-family: "Display";
+  src: url("/fonts/Display-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Display";
+  src: url("/fonts/Display-VariableItalic.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Body";
+  src: url("/fonts/Body-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Mono";
+  src: url("/fonts/Mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Mono";
+  src: url("/fonts/Mono-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Lets us write `light:border-black` when a theme needs a different RULE
+   rather than a different token value. Used sparingly. */
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/* ── Dark: the default, and the brand ─────────────────────────────────────
+ * Warm near-black, not #000. Cream text, not #fff. That single choice is the
+ * difference between "expensive" and "template".
+ */
+@theme {
+  --font-display: "Display", system-ui, sans-serif;
+  --font-sans: "Body", system-ui, sans-serif;
+  --font-mono: "Mono", ui-monospace, monospace;
+
+  --color-bg: #100e0b;
+  --color-surface: #1a1713;
+  --color-card: #221e18;
+  --color-line: #2a251e;
+  --color-line-strong: #3a3329;
+
+  --color-fg: #f2ede3; /* cream     ~16:1 on bg */
+  --color-fg-muted: #a8a093; /* body      ~7:1  */
+  --color-fg-subtle: #7a7264; /* metadata  ~4.5:1 */
+
+  /* Fills, both themes. Safe as TEXT in dark mode only. */
+  --color-accent: #ffc800;
+  /* Always safe as text. Flips value in light mode; hue stays. */
+  --color-accent-ink: #ffc800;
+  --color-accent-hover: #f5b300;
+  --color-on-accent: #100e0b;
+
+  --text-meta: 0.6875rem;
+  --text-meta--line-height: 1.5;
+  --text-meta--letter-spacing: 0.12em;
+  --text-meta-lg: 0.75rem;
+  --text-meta-lg--line-height: 1.5;
+  --text-meta-lg--letter-spacing: 0.16em;
+
+  --text-body-sm: 0.9375rem;
+  --text-body-sm--line-height: 1.65;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.7;
+  --text-body-lg: 1.1875rem;
+  --text-body-lg--line-height: 1.6;
+
+  /* Satoshi wants tighter tracking as it grows */
+  --text-display-xs: 1.375rem;
+  --text-display-xs--line-height: 1.2;
+  --text-display-xs--letter-spacing: -0.02em;
+  --text-display-sm: 1.75rem;
+  --text-display-sm--line-height: 1.15;
+  --text-display-sm--letter-spacing: -0.025em;
+  --text-display-md: clamp(2rem, 4vw, 3rem);
+  --text-display-md--line-height: 1.08;
+  --text-display-md--letter-spacing: -0.03em;
+  --text-display-lg: clamp(2.75rem, 6vw, 4.5rem);
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.035em;
+  --text-display-xl: clamp(3rem, 9vw, 6.5rem);
+  --text-display-xl--line-height: 0.94;
+  --text-display-xl--letter-spacing: -0.045em;
+
+  /* Nav-only. Kept separate so the bar can be tuned without touching the
+     page type scale. */
+  --text-nav: 0.6875rem;
+  --text-nav--line-height: 1;
+  --text-nav--letter-spacing: 0.14em;
+  --text-wordmark: 1.0625rem;
+  --text-wordmark--line-height: 1;
+  --text-wordmark--letter-spacing: -0.02em;
+
+  --spacing-section: 6rem;
+  --spacing-section-lg: 9rem;
+
+  --container-shell: 82rem;
+  --container-prose: 40rem;
+
+  --radius-card: 0.375rem;
+  --radius-pill: 100vw;
+
+  --animate-marquee: marquee 45s linear infinite;
+  --animate-marquee-slow: marquee 70s linear infinite;
+  --animate-rise: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade: fade 0.4s ease-out forwards;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* ── Light: cream, never white ────────────────────────────────────────────
+ * #FFC800 is ~1.5:1 on cream — unreadable. accent-ink drops to a deep amber
+ * (~5.4:1) for text while accent stays bright for fills with dark text on top.
+ * Same brand colour, different job per surface.
+ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg: #f7f3ea;
+  --color-surface: #fcf9f2;
+  --color-card: #f1ece0;
+  --color-line: #e2dacb;
+  --color-line-strong: #cdc2ae;
+
+  --color-fg: #14120e; /* ~17:1  */
+  --color-fg-muted: #565043; /* ~7:1   */
+  --color-fg-subtle: #7d7565; /* ~4.6:1 */
+
+  --color-accent: #ffc800; /* fills only on this ground */
+  --color-accent-ink: #8a5a00; /* ~5.4:1 — the text one */
+  --color-accent-hover: #6e4700;
+  --color-on-accent: #14120e;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem; /* clears the fixed nav on #anchor jumps */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg font-sans text-body text-fg-muted antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-bold text-fg;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* The old build had no focus styles whatsoever. */
+  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+
+  img,
+  video {
+    @apply block max-w-full;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+}
+
+/* The signature move: one true-italic word per heading, in the accent. */
+@utility accent-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+  color: var(--color-accent-ink);
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Media inside the lightbox fits the viewport — no scrolling to see an image */
+@utility fit-screen {
+  max-height: calc(100svh - 8.5rem);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+@utility edge-fade {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 4rem,
+    black calc(100% - 4rem),
+    transparent 100%
+  );
+}
+
+/* Lets people actually read a marquee */
+@utility pause-on-hover {
+  &:hover > * {
+    animation-play-state: paused;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-line-strong);
+  border-radius: 100vw;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  /* A marquee under the blanket rule below would snap to -50% and freeze
+     mid-list. Stop it properly and make the row scrollable by hand. */
+  .animate-marquee,
+  .animate-marquee-slow {
+    animation: none !important;
+    overflow-x: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+===== FILE: src\lib\cn.ts =====
+
+// src/lib/cn.ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+/** Merge class names, with later Tailwind utilities winning over earlier ones. */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+
+===== FILE: src\lib\content.ts =====
+
+// src/lib/content.ts
+//
+// The single entry point for all portfolio content. Parses both JSON files,
+// resolves clientId → Client, and fails loudly on bad data. Nothing else in
+// the app should import the raw JSON.
+
+import clientsJson from "../data/clients.json";
+import projectsJson from "../data/projects.json";
+import {
+  ClientSchema,
+  ProjectSchema,
+  type Client,
+  type Filter,
+  type ResolvedProject,
+} from "../types";
+import { z } from "zod";
+
+function parseOrThrow<T>(
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  data: unknown,
+  label: string
+): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    // Vite surfaces this in the terminal and the browser overlay, with the
+    // exact path of the bad field.
+    console.error(`[content] ${label} failed validation:`, result.error.format());
+    throw new Error(`Invalid ${label}. See console for the offending field.`);
+  }
+  return result.data;
+}
+
+export const clients: Client[] = parseOrThrow(
+  z.array(ClientSchema),
+  clientsJson,
+  "clients.json"
+);
+
+const clientsById = new Map(clients.map((c) => [c.id, c]));
+
+const rawProjects = parseOrThrow(
+  z.array(ProjectSchema),
+  projectsJson,
+  "projects.json"
+);
+
+// Referential integrity: a clientId pointing at nothing is the bug that made
+// the marquee advertise clients with no work behind them.
+for (const p of rawProjects) {
+  if (p.clientId && !clientsById.has(p.clientId)) {
+    throw new Error(
+      `Project "${p.id}" references unknown clientId "${p.clientId}".`
+    );
+  }
+}
+
+const slugs = new Set<string>();
+for (const p of rawProjects) {
+  if (slugs.has(p.slug)) throw new Error(`Duplicate project slug "${p.slug}".`);
+  slugs.add(p.slug);
+}
+
+export const projects: ResolvedProject[] = rawProjects
+  .map((p) => ({ ...p, client: p.clientId ? clientsById.get(p.clientId)! : null }))
+  .sort((a, b) => a.order - b.order);
+
+// ── Selectors ────────────────────────────────────────────────────────────────
+
+export const featuredProjects = projects.filter((p) => p.featured);
+
+/** Everything not featured — the dense archive grid. */
+export const archiveProjects = projects.filter((p) => !p.featured);
+
+export const marqueeClients = clients.filter((c) => c.showInMarquee);
+
+export function getProjectBySlug(slug: string): ResolvedProject | undefined {
+  return projects.find((p) => p.slug === slug);
+}
+
+/** Adjacent projects for prev/next navigation on a project page. */
+export function getProjectNeighbours(slug: string) {
+  const i = projects.findIndex((p) => p.slug === slug);
+  if (i === -1) return { prev: null, next: null };
+  return {
+    prev: i > 0 ? projects[i - 1] : null,
+    next: i < projects.length - 1 ? projects[i + 1] : null,
+  };
+}
+
+export function filterProjects(
+  list: ResolvedProject[],
+  filter: Filter,
+  query: string
+): ResolvedProject[] {
+  const q = query.trim().toLowerCase();
+  return list.filter((p) => {
+    if (filter !== "all" && p.type !== filter) return false;
+    if (!q) return true;
+    return (
+      p.title.toLowerCase().includes(q) ||
+      p.client?.name.toLowerCase().includes(q) ||
+      p.summary.toLowerCase().includes(q) ||
+      p.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  });
+}
+
+/**
+ * Work to show at the bottom of a project page: same client first, because
+ * "three more things I made for A2SV" is a stronger signal than "three more
+ * posters", then same type to fill the row.
+ */
+export function getRelatedProjects(slug: string, limit = 3): ResolvedProject[] {
+  const current = getProjectBySlug(slug);
+  if (!current) return [];
+
+  const others = projects.filter((p) => p.slug !== slug);
+  const sameClient = current.clientId
+    ? others.filter((p) => p.clientId === current.clientId)
+    : [];
+  const sameType = others.filter(
+    (p) => p.type === current.type && !sameClient.includes(p)
+  );
+
+  return [...sameClient, ...sameType].slice(0, limit);
+}
+
+/** Years present in the data, newest first — for a year filter. */
+export const years = [...new Set(projects.map((p) => p.year))].sort((a, b) => b - a);
+
+/** Clients that actually have work, for a client filter and client pages. */
+export const clientsWithWork = clients.filter((c) =>
+  projects.some((p) => p.clientId === c.id)
+);
+
+
+===== FILE: src\lib\media.ts =====
+
+// src/lib/media.ts
+//
+// Every image in the old build was served at full resolution, including 600px
+// grid thumbnails. These helpers rewrite Cloudinary delivery URLs to request
+// the size and format actually needed. Expect an 80–90% weight reduction with
+// no visible difference. Costs nothing and requires no backend.
+
+const CLOUDINARY = /^(https:\/\/res\.cloudinary\.com\/[^/]+\/(?:image|video)\/upload)\/(.*)$/;
+
+type TransformOpts = {
+  /** Target width in CSS pixels. */
+  width?: number;
+  /** Target height — only set when cropping to a fixed box. */
+  height?: number;
+  /** 'fill' crops to the box, 'limit' scales down without cropping. */
+  crop?: "fill" | "limit";
+  /** Override automatic quality, e.g. 80. */
+  quality?: number | "auto";
+};
+
+/**
+ * Insert a transform chain into a Cloudinary URL.
+ * Non-Cloudinary URLs (placeholders, third-party logos) pass through untouched.
+ */
+export function cld(url: string, opts: TransformOpts = {}): string {
+  const match = url.match(CLOUDINARY);
+  if (!match) return url;
+
+  const [, base, rest] = match;
+  const { width, height, crop = "limit", quality = "auto" } = opts;
+
+  const parts = ["f_auto", `q_${quality}`];
+  if (width) parts.push(`w_${width}`);
+  if (height) parts.push(`h_${height}`);
+  if (width || height) parts.push(`c_${crop}`);
+  if (crop === "fill") parts.push("g_auto"); // content-aware cropping
+
+  // Strip any transform chain already present so calls don't stack.
+  const cleaned = rest.replace(/^[a-z]{1,3}_[^/]*\//, "");
+  return `${base}/${parts.join(",")}/${cleaned}`;
+}
+
+/** A responsive srcset at sensible breakpoints. */
+export function cldSrcSet(url: string, widths = [400, 600, 900, 1200]): string {
+  if (!CLOUDINARY.test(url)) return "";
+  return widths.map((w) => `${cld(url, { width: w })} ${w}w`).join(", ");
+}
+
+/** A tiny blurred placeholder to show while the real image decodes. */
+export function cldBlurUrl(url: string): string {
+  const match = url.match(CLOUDINARY);
+  if (!match) return "";
+  const [, base, rest] = match;
+  const cleaned = rest.replace(/^[a-z]{1,3}_[^/]*\//, "");
+  return `${base}/f_auto,q_30,w_24,e_blur:400/${cleaned}`;
+}
+
+/** Poster frame for a Cloudinary-hosted showreel. */
+export function cldVideoPoster(videoUrl: string, width = 1600): string {
+  const match = videoUrl.match(CLOUDINARY);
+  if (!match) return "";
+  const [, base, rest] = match;
+  const cleaned = rest.replace(/^[a-z]{1,3}_[^/]*\//, "").replace(/\.(mp4|webm|mov)$/i, ".jpg");
+  return `${base}/f_auto,q_auto,w_${width}/${cleaned}`;
+}
+
+// ── YouTube ──────────────────────────────────────────────────────────────────
+
+/**
+ * Build a clean embed URL. The old build appended `autoplay=1` without `mute=1`,
+ * which browsers block, so autoplay silently failed.
+ */
+export function youTubeEmbed(
+  embedUrl: string,
+  opts: { autoplay?: boolean } = {}
+): string {
+  const u = new URL(embedUrl);
+  u.searchParams.set("rel", "0");
+  u.searchParams.set("modestbranding", "1");
+  u.searchParams.set("playsinline", "1");
+  if (opts.autoplay) {
+    u.searchParams.set("autoplay", "1");
+    u.searchParams.set("mute", "1"); // required, or autoplay is refused
+  }
+  return u.toString();
+}
+
+/** Aspect-ratio class for a video project's format. */
+export const VIDEO_ASPECT: Record<string, string> = {
+  widescreen: "aspect-video",
+  portrait: "aspect-[9/16]",
+  square: "aspect-square",
+};
+
+
+===== FILE: src\lib\seo.tsx =====
+
+// src/lib/seo.tsx
+import { Head } from "vite-react-ssg";
+import { projects } from "./content";
+import { cld } from "./media";
+
+/** Falls back to the newest featured project, cropped to 1200x630. Replace with
+ *  a designed asset at /og/default.png when there is one. */
+const defaultOg = (() => {
+  const hero = projects.find((p) => p.featured) ?? projects[0];
+  return hero
+    ? cld(hero.thumbnail.url, { width: 1200, height: 630, crop: "fill" })
+    : "/og/default.png";
+})();
+
+export const SITE = {
+  url: "https://REPLACE-WITH-YOUR-DOMAIN",
+  name: "Kalkidan Birhanu",
+  title: "Kalkidan Birhanu — Video Editor & Graphic Designer",
+  description:
+    "Video editor, graphic designer and social strategist based in Addis Ababa. Selected work in brand identity, motion and campaign design.",
+  ogImage: defaultOg,
+} as const;
+
+/**
+ * Rendered inside a page component. vite-react-ssg collects it during
+ * prerendering and bakes the tags into that route's static HTML — which is the
+ * whole point, since LinkedIn, Telegram and WhatsApp don't run JavaScript and
+ * never see client-set meta tags.
+ */
+export function Seo({
+  title,
+  description = SITE.description,
+  image = SITE.ogImage,
+  path = "/",
+  type = "website",
+  jsonLd,
+}: {
+  title?: string;
+  description?: string;
+  image?: string;
+  path?: string;
+  type?: "website" | "article";
+  jsonLd?: string;
+}) {
+  const fullTitle = title ? `${title} — ${SITE.name}` : SITE.title;
+  const url = `${SITE.url}${path}`;
+  const img = image.startsWith("http") ? image : `${SITE.url}${image}`;
+
+  return (
+    <Head>
+      <title>{fullTitle}</title>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={url} />
+      <meta property="og:type" content={type} />
+      <meta property="og:title" content={fullTitle} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={img} />
+      <meta property="og:url" content={url} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={fullTitle} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={img} />
+      {jsonLd && <script type="application/ld+json">{jsonLd}</script>}
+    </Head>
+  );
+}
+
+/** CreativeWork schema for a project page. */
+export function creativeWorkJsonLd(p: {
+  title: string;
+  summary: string;
+  date: string;
+  slug: string;
+  thumbnail: { url: string };
+  client: { name: string } | null;
+}) {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: p.title,
+    description: p.summary,
+    dateCreated: p.date,
+    url: `${SITE.url}/works/${p.slug}`,
+    image: p.thumbnail.url,
+    creator: { "@type": "Person", name: SITE.name, url: SITE.url },
+    ...(p.client ? { sourceOrganization: { "@type": "Organization", name: p.client.name } } : {}),
+  });
+}
+
+/** Person schema for the home page — helps Google build a knowledge panel. */
+export function personJsonLd(profile: {
+  name: string;
+  headline: string;
+  email: string;
+  socialLinks: { url: string }[];
+}) {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: profile.name,
+    jobTitle: profile.headline,
+    email: profile.email,
+    url: SITE.url,
+    address: { "@type": "PostalAddress", addressLocality: "Addis Ababa", addressCountry: "ET" },
+    sameAs: profile.socialLinks.map((s) => s.url),
+  });
+}
+
+
+===== FILE: src\main.tsx =====
+
+// src/main.tsx
+import { ViteReactSSG } from "vite-react-ssg";
+import { routes } from "./routes";
+import "./index.css";
+
+// Hydrates in the browser, and is the entry the prerenderer uses to render each
+// route to static HTML at build time. Same code path, no second entry file.
+export const createRoot = ViteReactSSG({ routes });
+
+
+===== FILE: src\pages\ContactRedirect.tsx =====
+
+// src/pages/ContactRedirect.tsx
+import { Navigate } from "react-router-dom";
+
+/** Contact now lives on the home page. Old links keep working. */
+export default function ContactRedirect() {
+  return <Navigate to="/#contact" replace />;
+}
+
+
+===== FILE: src\pages\HomePage.tsx =====
+
+// src/pages/HomePage.tsx
+import { Hero } from "../components/home/Hero";
+import { KeywordMarquee } from "../components/home/KeywordMarquee";
+import { ClientMarquee } from "../components/home/ClientMarquee";
+import { WorkSection } from "../components/work/WorkSection";
+import { Timeline } from "../components/home/Timeline";
+import { Toolbox } from "../components/home/Toolbox";
+import { ContactSection } from "../components/home/ContactSection";
+import { Seo, personJsonLd } from "../lib/seo";
+import profile from "../data/profile.json";
+
+export default function HomePage() {
+  return (
+    <>
+      {/* Prerendered into this route's static HTML at build time. */}
+      <Seo path="/" jsonLd={personJsonLd(profile)} />
+
+      <Hero />
+      <KeywordMarquee />
+      <ClientMarquee />
+
+      <WorkSection />
+      <Timeline />
+      <Toolbox />
+      <ContactSection />
+    </>
+  );
+}
+
+
+===== FILE: src\pages\NotFoundPage.tsx =====
+
+// src/pages/NotFoundPage.tsx
+import { ButtonLink } from "../components/primitives/Button";
+import { Meta } from "../components/primitives/Meta";
+import { Seo } from "../lib/seo";
+
+export default function NotFoundPage() {
+  return (
+    <>
+      <Seo title="Not found" path="/404" />
+      <section className="flex min-h-[70vh] flex-col items-center justify-center gap-8 px-6 text-center">
+      <Meta size="lg">Error 404</Meta>
+      <h1 className="text-display-lg">
+        This page doesn&rsquo;t <em className="accent-italic">exist</em>.
+      </h1>
+      <p className="max-w-prose text-fg-muted">
+        The link may be out of date, or the project may have been renamed.
+      </p>
+      <div className="flex flex-wrap justify-center gap-4">
+        <ButtonLink to="/" variant="solid">
+          Back home
+        </ButtonLink>
+        <ButtonLink to="/works">See the work</ButtonLink>
+      </div>
+    </section>
+    </>
+  );
+}
+
+
+===== FILE: src\pages\ProjectPage.tsx =====
+
+// src/pages/ProjectPage.tsx
+//
+// The modal is the primary way people look at work. This page exists so that
+// every project has a real URL with its own title, description and share
+// image baked into static HTML — which is what link previews and search
+// engines read, and the reason prerendering is in this project at all.
+//
+// So it is built for that job and no more. The previous version was a
+// case-study chassis: a two-column grid with a sticky metadata slate down the
+// right. Twelve of fourteen projects have no case study, no gallery, no role,
+// no tools and no links, so that layout rendered a pinned sidebar next to a
+// single sentence, with a column of dead space under it.
+//
+// This is a centred plate instead. Work first, one line of context under it,
+// and a way onward. Everything optional renders only when it exists, so the
+// page gets richer as the data does rather than announcing what is missing.
+
+import { Link, useParams } from "react-router-dom";
+import {
+  getProjectBySlug,
+  getProjectNeighbours,
+  getRelatedProjects,
+} from "../lib/content";
+import { FILTER_LABELS } from "../types";
+import { ProjectMedia } from "../components/project/ProjectMedia";
+import { ProjectMeta } from "../components/project/ProjectMeta";
+import { ProjectGallery } from "../components/project/ProjectGallery";
+import { CaseStudy } from "../components/project/CaseStudy";
+import { ProjectNav } from "../components/project/ProjectNav";
+import { RelatedWork } from "../components/project/RelatedWork";
+import { Meta } from "../components/primitives/Meta";
+import { Pill } from "../components/primitives/Pill";
+import { ButtonExternal } from "../components/primitives/Button";
+import NotFoundPage from "./NotFoundPage";
+import { Seo, creativeWorkJsonLd } from "../lib/seo";
+import { cld } from "../lib/media";
+
+export default function ProjectPage() {
+  const { slug = "" } = useParams();
+  const project = getProjectBySlug(slug);
+
+  if (!project) return <NotFoundPage />;
+
+  const { prev, next } = getProjectNeighbours(slug);
+  const related = getRelatedProjects(slug);
+  const sharesClient =
+    related.length > 0 && related[0].clientId === project.clientId && !!project.client;
+
+  return (
+    <article className="px-6 pb-section-lg pt-28">
+      <Seo
+        title={project.title}
+        description={
+          project.summary ||
+          `${project.title} — ${project.client?.name ?? "project"}, ${project.year}.`
+        }
+        image={cld(project.thumbnail.url, { width: 1200, height: 630, crop: "fill" })}
+        path={`/works/${project.slug}`}
+        type="article"
+        jsonLd={creativeWorkJsonLd(project)}
+      />
+
+      <div className="mx-auto flex max-w-5xl flex-col gap-12">
+        <Link
+          to="/works"
+          className="group inline-flex w-fit items-center gap-2 text-fg-subtle transition-colors hover:text-accent-ink"
+        >
+          <span aria-hidden className="transition-transform group-hover:-translate-x-1">
+            &larr;
+          </span>
+          <Meta>All work</Meta>
+        </Link>
+
+        {/* Title block sits above the work, centred, like a plate caption
+            moved to the top. Client, year and kind are the whole context most
+            of these pieces need. */}
+        <header className="flex flex-col items-center gap-4 text-center">
+          <Meta size="lg" tone="accent">
+            {project.client && (
+              <>
+                <Link
+                  to={`/works?q=${encodeURIComponent(project.client.name)}`}
+                  className="underline-offset-4 hover:underline"
+                >
+                  {project.client.name}
+                </Link>
+                {" · "}
+              </>
+            )}
+            {project.year} · {FILTER_LABELS[project.type]}
+          </Meta>
+
+          <h1 className="text-display-lg">{project.title}</h1>
+
+          {project.subtitle && (
+            <p className="max-w-2xl font-display text-display-sm font-bold text-fg-subtle">
+              {project.subtitle}
+            </p>
+          )}
+        </header>
+
+        <ProjectMedia project={project} />
+
+        {project.summary && (
+          <p className="mx-auto max-w-prose text-center text-body-lg text-fg-muted">
+            {project.summary}
+          </p>
+        )}
+
+        {project.tags.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2">
+            {project.tags.map((t) => (
+              <Pill key={t}>{t}</Pill>
+            ))}
+          </div>
+        )}
+
+        {/* Credits. Renders nothing at all unless there is something beyond
+            the client and year already shown above. */}
+        <ProjectMeta project={project} />
+
+        {/* Case study, when there is one. Single column at reading width —
+            the sticky sidebar it used to sit beside is gone. */}
+        {project.caseStudy && (
+          <div className="mx-auto w-full max-w-prose">
+            <CaseStudy data={project.caseStudy} />
+          </div>
+        )}
+
+        {(project.links.length > 0 || project.type === "social") && (
+          <div className="flex flex-wrap justify-center gap-3">
+            {project.links.map((l) => (
+              <ButtonExternal key={l.url} href={l.url} size="sm">
+                {l.label}
+              </ButtonExternal>
+            ))}
+            {project.type === "social" && (
+              <ButtonExternal href={project.media.link} variant="accent" size="sm">
+                View on {project.media.platform}
+              </ButtonExternal>
+            )}
+          </div>
+        )}
+
+        <ProjectGallery items={project.gallery} />
+
+        <RelatedWork
+          projects={related}
+          clientName={sharesClient ? project.client!.name : undefined}
+        />
+
+        <ProjectNav prev={prev} next={next} />
+      </div>
+    </article>
+  );
+}
+
+===== FILE: src\pages\WorksPage.tsx =====
+
+// src/pages/WorksPage.tsx
+import { useMemo } from "react";
+import { projects } from "../lib/content";
+import { filterProjects } from "../lib/content";
+import { useFilters } from "../hooks/useFilters";
+import { FilterBar } from "../components/work/FilterBar";
+import { ProjectGrid } from "../components/work/ProjectGrid";
+import { ProjectList } from "../components/work/ProjectList";
+import { EmptyState } from "../components/work/EmptyState";
+import { ProjectModal } from "../components/work/ProjectModal";
+import { useProjectModal } from "../hooks/useProjectModal";
+import { SectionHeader } from "../components/primitives/SectionHeader";
+import { Seo } from "../lib/seo";
+
+export default function WorksPage() {
+  const { type, view, query, isFiltered, setType, setView, setQuery, reset } =
+    useFilters();
+
+  const results = useMemo(
+    () => filterProjects(projects, type, query),
+    [type, query]
+  );
+
+  // Prev/next walk the *filtered* list, so paging matches what's on screen.
+  const modal = useProjectModal(results);
+
+  return (
+    <div className="px-6 pb-section-lg pt-32">
+      <Seo
+        title="Work"
+        description="Selected video editing, brand design and social campaign work by Kalkidan Birhanu."
+        path="/works"
+      />
+      <div className="mx-auto flex max-w-shell flex-col gap-10">
+        <SectionHeader
+          index="01"
+          label="Archive"
+          before="Everything I've"
+          emphasis="made"
+          after="."
+        >
+          Video, brand identity and campaign design — {projects.length} projects
+          across {new Set(projects.map((p) => p.clientId)).size} clients.
+        </SectionHeader>
+
+        <FilterBar
+          sticky
+          type={type}
+          view={view}
+          query={query}
+          count={results.length}
+          onType={setType}
+          onView={setView}
+          onQuery={setQuery}
+        />
+
+        {results.length === 0 ? (
+          <EmptyState query={query} onReset={reset} />
+        ) : view === "list" ? (
+          <ProjectList projects={results} onOpen={modal.open} />
+        ) : (
+          <ProjectGrid projects={results} onOpen={modal.open} />
+        )}
+
+        {isFiltered && results.length > 0 && (
+          <button
+            type="button"
+            onClick={reset}
+            className="self-center font-mono text-meta uppercase text-fg-subtle underline-offset-4 hover:text-accent-ink hover:underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {modal.project && (
+        <ProjectModal
+          project={modal.project}
+          onClose={modal.close}
+          onPrev={modal.prev}
+          onNext={modal.next}
+          hasPrev={modal.hasPrev}
+          hasNext={modal.hasNext}
+        />
+      )}
+    </div>
+  );
+}
+
+
+===== FILE: src\routes.tsx =====
+
+// src/routes.tsx
+//
+// One route table. The app renders from it and the prerenderer walks it at
+// build time, so a route can never exist in one place and not the other.
+
+import type { RouteRecord } from "vite-react-ssg";
+import RootLayout from "./components/layout/RootLayout";
+import HomePage from "./pages/HomePage";
+import WorksPage from "./pages/WorksPage";
+import ProjectPage from "./pages/ProjectPage";
+import ContactRedirect from "./pages/ContactRedirect";
+import NotFoundPage from "./pages/NotFoundPage";
+import { projects } from "./lib/content";
+
+/**
+ * The upload tool exists only in development. `import.meta.env.DEV` is a
+ * compile-time constant, so in a production build this array is empty and the
+ * module — including the Cloudinary credentials it reads — is dropped by
+ * tree-shaking. There is nothing to hide, because nothing is shipped.
+ */
+const devRoutes: RouteRecord[] = import.meta.env.DEV
+  ? [
+      {
+        path: "upload",
+        lazy: async () => ({ Component: (await import("./dev/UploadTool")).default }),
+      },
+    ]
+  : [];
+
+export const routes: RouteRecord[] = [
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      { index: true, element: <HomePage />, entry: "src/pages/HomePage.tsx" },
+      { path: "works", element: <WorksPage />, entry: "src/pages/WorksPage.tsx" },
+      {
+        path: "works/:slug",
+        element: <ProjectPage />,
+        entry: "src/pages/ProjectPage.tsx",
+        // Every project becomes a real HTML file with its own title,
+        // description and share image.
+        getStaticPaths: () => projects.map((p) => `/works/${p.slug}`),
+      },
+      // The CV and anything already linking to /contact keeps working.
+      { path: "contact", element: <ContactRedirect /> },
+      ...devRoutes,
+      // Prerendered so hosts have a real 404.html to serve.
+      { path: "404", element: <NotFoundPage />, entry: "src/pages/NotFoundPage.tsx" },
+      { path: "*", element: <NotFoundPage />, entry: "src/pages/NotFoundPage.tsx" },
+    ],
+  },
+];
+
+
+===== FILE: src\types\index.ts =====
+
+// src/types/index.ts
+//
+// The old build did `projectsData as Project[]` — a cast, not a check. A typo
+// in the JSON compiled fine and crashed the browser. These schemas parse the
+// data at startup instead, so a bad entry fails loudly in the terminal with
+// the offending field named.
+
+import { z } from "zod";
+
+// ── Client ───────────────────────────────────────────────────────────────────
+
+export const ClientSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  /** null = no real logo yet; such clients are excluded from the marquee. */
+  logoUrl: z.string().nullable(),
+  showInMarquee: z.boolean(),
+});
+
+export type Client = z.infer<typeof ClientSchema>;
+
+// ── Shared project fields ────────────────────────────────────────────────────
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const ThumbnailSchema = z.object({
+  url: z.string().url(),
+  /** Intrinsic size, so the grid can reserve space and stop layout shift.
+   *  null until the upload tool or a backfill fills it in. */
+  width: z.number().int().positive().nullable(),
+  height: z.number().int().positive().nullable(),
+});
+
+/** Extra images beyond the hero — process shots, variants, a campaign set. */
+const GalleryItemSchema = z.object({
+  url: z.string().url(),
+  alt: z.string(),
+  caption: z.string().optional(),
+  width: z.number().int().positive().nullable().default(null),
+  height: z.number().int().positive().nullable().default(null),
+});
+
+/**
+ * Only featured work carries this. Twelve thin case studies read worse than
+ * two real ones, so the field is optional and stays null for archive pieces.
+ */
+const CaseStudySchema = z.object({
+  brief: z.string(),
+  approach: z.string(),
+  outcome: z.string().optional(),
+});
+
+const ExternalLinkSchema = z.object({
+  label: z.string(),
+  url: z.string().url(),
+});
+
+export type GalleryItem = z.infer<typeof GalleryItemSchema>;
+export type CaseStudy = z.infer<typeof CaseStudySchema>;
+
+const BaseProjectSchema = z.object({
+  id: z.string().min(1),
+  /** URL segment for /works/:slug — unique across all projects. */
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be lowercase kebab-case"),
+  title: z.string().min(1),
+  subtitle: z.string().optional(),
+  /** Must match a Client.id. Cross-checked in loadContent(). */
+  clientId: z.string().nullable(),
+  date: z.string().regex(ISO_DATE, "date must be YYYY-MM-DD"),
+  year: z.number().int().min(2000).max(2100),
+  summary: z.string(),
+  /** What you actually did. Drives the credits line on the project page. */
+  role: z.array(z.string()),
+  /** Software used. Renders as mono metadata, like a camera data slate. */
+  tools: z.array(z.string()),
+  tags: z.array(z.string()),
+  /** Featured work gets the full case-study layout and top billing. */
+  featured: z.boolean(),
+  /** Explicit display order. Lower sorts first. */
+  order: z.number().int(),
+  thumbnail: ThumbnailSchema,
+  /* All three default, so existing entries need no migration. */
+  gallery: z.array(GalleryItemSchema).default([]),
+  caseStudy: CaseStudySchema.nullable().default(null),
+  links: z.array(ExternalLinkSchema).default([]),
+});
+
+// ── The three project kinds ──────────────────────────────────────────────────
+
+export const VideoProjectSchema = BaseProjectSchema.extend({
+  type: z.literal("video"),
+  media: z.object({
+    provider: z.literal("youtube"),
+    embedUrl: z.string().url(),
+    format: z.enum(["widescreen", "portrait", "square"]),
+  }),
+});
+
+export const GraphicProjectSchema = BaseProjectSchema.extend({
+  type: z.literal("graphic"),
+  media: z.object({
+    fullUrl: z.string().url(),
+  }),
+});
+
+export const SocialProjectSchema = BaseProjectSchema.extend({
+  type: z.literal("social"),
+  media: z.object({
+    platform: z.enum(["LinkedIn", "Instagram", "Telegram", "TikTok", "YouTube"]),
+    link: z.string().url(),
+    stats: z.string().nullable().optional(),
+  }),
+});
+
+export const ProjectSchema = z.discriminatedUnion("type", [
+  VideoProjectSchema,
+  GraphicProjectSchema,
+  SocialProjectSchema,
+]);
+
+export type Project = z.infer<typeof ProjectSchema>;
+export type VideoProject = z.infer<typeof VideoProjectSchema>;
+export type GraphicProject = z.infer<typeof GraphicProjectSchema>;
+export type SocialProject = z.infer<typeof SocialProjectSchema>;
+export type ProjectType = Project["type"];
+
+/** A project with its client resolved — what components actually receive. */
+export type ResolvedProject = Project & { client: Client | null };
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+
+export const FILTERS = ["all", "video", "graphic", "social"] as const;
+export type Filter = (typeof FILTERS)[number];
+
+export const FILTER_LABELS: Record<Filter, string> = {
+  all: "All",
+  video: "Video",
+  graphic: "Design",
+  social: "Social",
+};
+
+
+===== FILE: src\vite-env.d.ts =====
+
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_CLOUDINARY_CLOUD_NAME?: string;
+  readonly VITE_CLOUDINARY_UPLOAD_PRESET?: string;
+}
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+
+===== FILE: tsconfig.app.json =====
+
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src"]
+}
+
+
+===== FILE: tsconfig.json =====
+
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+}
+
+
+===== FILE: tsconfig.node.json =====
+
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "noEmit": true,
+    "strict": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+===== FILE: vercel.json =====
+
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/fonts/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    }
+  ]
+}
+
+
+===== FILE: vite.config.ts =====
+
+/// <reference types="vite-react-ssg" />
+import { defineConfig } from "vite";
+import type {} from "vite-react-ssg/node";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import path from "node:path";
+
+export default defineConfig(({ isSsrBuild }) => ({
+  // Tailwind v4 runs as a Vite plugin — no postcss.config.js, no autoprefixer.
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { "@": path.resolve(__dirname, "./src") },
+  },
+  ssgOptions: {
+    script: "async",
+    formatting: "none",
+    dirStyle: "nested",
+  },
+  build: {
+    target: "es2022",
+    rollupOptions: {
+      // React is external during the SSR pass, so it can't be forced into a
+      // manual chunk there. Split the vendor bundle on the client build only.
+      output: isSsrBuild
+        ? {}
+        : { manualChunks: { vendor: ["react", "react-dom", "react-router-dom"] } },
+    },
+  },
+}));

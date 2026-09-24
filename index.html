@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <!-- Title, description and share tags are supplied per route by <Seo>
+         and baked in at build time. Nothing static here, or every page ships
+         two of each. -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#100E0B" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)" />
+
+    <!-- Preload only the two display cuts actually used above the fold.
+         Body and mono can arrive a beat later without anything shifting. -->
+    <link rel="preload" href="/fonts/Display-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Display-VariableItalic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Body-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+
+    <!--
+      Theme, applied BEFORE first paint.
+
+      Without this the page renders in the default theme for one frame and then
+      snaps to the saved one. That white flash on every load is the single thing
+      that makes a theme toggle feel cheap, and it cannot be fixed from React —
+      React runs too late. Hence the inline script.
+    -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var theme =
+            saved === "light" || saved === "dark"
+              ? saved
+              : "dark"; /* dark is the brand, not the system default */
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          /* private mode / storage disabled — the default attribute stands */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

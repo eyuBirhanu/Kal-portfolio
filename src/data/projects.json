@@ -1,0 +1,400 @@
+[
+  {
+    "id": "img-3",
+    "slug": "adot-new-feature",
+    "type": "graphic",
+    "title": "Adot New Feature",
+    "clientId": "adot",
+    "date": "2026-01-01",
+    "year": 2026,
+    "summary": "A poster for Adot new feature.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "newFeature",
+      "Adot"
+    ],
+    "featured": false,
+    "order": 0,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Adot_New_feature_kal_i0dkle.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Adot_New_feature_kal_i0dkle.png"
+    }
+  },
+  {
+    "id": "img-2",
+    "slug": "2026-celebration-poster",
+    "type": "graphic",
+    "title": "2026 Celebration Poster",
+    "clientId": "skillbridge",
+    "date": "2026-01-01",
+    "year": 2026,
+    "summary": "A poster for Skill Bridge 2026 celebration.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "celebration",
+      "skillBridge"
+    ],
+    "featured": false,
+    "order": 1,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824695/3_ql3wzr.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824695/3_ql3wzr.png"
+    }
+  },
+  {
+    "id": "img-1",
+    "slug": "happy-new-year-poster",
+    "type": "graphic",
+    "title": "Happy new Year poster",
+    "clientId": "rateeat",
+    "date": "2026-01-01",
+    "year": 2026,
+    "summary": "Celebrating the new year with RateEat",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Branding",
+      "Print"
+    ],
+    "featured": false,
+    "order": 2,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824698/1_vkp5vn.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824698/1_vkp5vn.png"
+    }
+  },
+  {
+    "id": "img-6",
+    "slug": "global-talent-map",
+    "type": "graphic",
+    "title": "Global Talent Map",
+    "clientId": "eskalate",
+    "date": "2025-10-02",
+    "year": 2025,
+    "summary": "Global Talent Map",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Eskalate"
+    ],
+    "featured": false,
+    "order": 3,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824690/Global_talent_map_u9lx1j.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824690/Global_talent_map_u9lx1j.png"
+    }
+  },
+  {
+    "id": "img-5",
+    "slug": "akil-oct",
+    "type": "graphic",
+    "title": "Akil Oct",
+    "clientId": "akil",
+    "date": "2025-10-02",
+    "year": 2025,
+    "summary": "Akil Oct",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Akil"
+    ],
+    "featured": false,
+    "order": 4,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824692/Akil_oct_gmbzqv.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824692/Akil_oct_gmbzqv.png"
+    }
+  },
+  {
+    "id": "img-7",
+    "slug": "black-circle-icon-business-logo",
+    "type": "graphic",
+    "title": "Black Circle Icon Business Logo",
+    "clientId": "hulu-store",
+    "date": "2025-09-02",
+    "year": 2025,
+    "summary": "Black Circle Icon Business Logo",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Hulu Store"
+    ],
+    "featured": false,
+    "order": 5,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824687/Black_Circle_Icon_Business_Logo_w4oezs.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824687/Black_Circle_Icon_Business_Logo_w4oezs.png"
+    }
+  },
+  {
+    "id": "img-9",
+    "slug": "efoy",
+    "type": "graphic",
+    "title": "Efoy",
+    "clientId": "efoy",
+    "date": "2025-08-10",
+    "year": 2025,
+    "summary": "Efoy",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Efoy"
+    ],
+    "featured": false,
+    "order": 6,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png"
+    }
+  },
+  {
+    "id": "img-8",
+    "slug": "grace-africa",
+    "type": "graphic",
+    "title": "Grace Africa",
+    "clientId": "grace-africa",
+    "date": "2025-08-10",
+    "year": 2025,
+    "summary": "Grace Africa",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Grace Africa"
+    ],
+    "featured": false,
+    "order": 7,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824684/1_1_dce1qs.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824684/1_1_dce1qs.png"
+    }
+  },
+  {
+    "id": "img-12",
+    "slug": "blue-modern-social-media-marketing-instagram-post",
+    "type": "graphic",
+    "title": "Blue Modern Social Media Marketing Instagram Post",
+    "clientId": "alta-counselling",
+    "date": "2025-07-10",
+    "year": 2025,
+    "summary": "Blue Modern Social Media Marketing Instagram Post",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Alta Counselling"
+    ],
+    "featured": false,
+    "order": 8,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824674/Copy_of_Copy_of_Blue_Modern_Social_Media_Marketing_Instagram_Post_ozugiw.jpg",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824674/Copy_of_Copy_of_Blue_Modern_Social_Media_Marketing_Instagram_Post_ozugiw.jpg"
+    }
+  },
+  {
+    "id": "img-11",
+    "slug": "afrochat-graphics",
+    "type": "graphic",
+    "title": "Afrochat Graphics",
+    "clientId": "afrochat",
+    "date": "2025-07-10",
+    "year": 2025,
+    "summary": "Afrochat Graphics",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Afrochat"
+    ],
+    "featured": false,
+    "order": 9,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824672/Afrochat_Graphics_July_lyqgy1.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824672/Afrochat_Graphics_July_lyqgy1.png"
+    }
+  },
+  {
+    "id": "vid-2",
+    "slug": "greed-grows-quieter",
+    "type": "video",
+    "title": "Greed Grows Quieter",
+    "clientId": "kaf-productions",
+    "date": "2025-07-04",
+    "year": 2025,
+    "summary": "A poem about greed and its consequences.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "GreedPoetry",
+      "PoetryFilm",
+      "KalkidanBirhanu",
+      "DarkPoetry"
+    ],
+    "featured": true,
+    "order": 10,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dujakhrdm/image/upload/v1768147828/VD_xaoh9f.jpg",
+      "width": null,
+      "height": null
+    },
+    "subtitle": "A Darker Chapter in the Poetic Journey",
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/embed/pCV3evS6W2M?si=vxPjXMkaN1fkaKJF",
+      "format": "widescreen"
+    },
+    "caseStudy": {
+      "brief": "[What did the client need, and why?]",
+      "approach": "[What did you actually do — the decisions, not the software?]",
+      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
+    },
+    "links": [],
+    "gallery": []
+  },
+  {
+    "id": "vid-1",
+    "slug": "cinematic-intro",
+    "type": "video",
+    "title": "Cinematic Intro",
+    "clientId": "ahadu",
+    "date": "2025-07-03",
+    "year": 2025,
+    "summary": "A short cinematic intro created and edited to showcase video editing skills.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "CinematicIntro",
+      "MotionDesign",
+      "Intro"
+    ],
+    "featured": true,
+    "order": 11,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dujakhrdm/image/upload/v1768147828/VD_xaoh9f.jpg",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/embed/DeN55E3YwK8?si=DFNHBRJIgZSoTX1e",
+      "format": "widescreen"
+    },
+    "caseStudy": {
+      "brief": "[What did the client need, and why?]",
+      "approach": "[What did you actually do — the decisions, not the software?]",
+      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
+    },
+    "links": [],
+    "gallery": []
+  },
+  {
+    "id": "img-4",
+    "slug": "afrochat-graphics-2",
+    "type": "graphic",
+    "title": "Afrochat Graphics",
+    "clientId": "afrochat",
+    "date": "2025-07-02",
+    "year": 2025,
+    "summary": "Afrochat Graphics",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Afrochat"
+    ],
+    "featured": false,
+    "order": 12,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Afrochat_Graphics_July_2_knbuhu.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Afrochat_Graphics_July_2_knbuhu.png"
+    }
+  },
+  {
+    "id": "img-10",
+    "slug": "yemuya-weg",
+    "type": "graphic",
+    "title": "Yemuya Weg",
+    "clientId": "yemuyaweg",
+    "date": "2025-05-10",
+    "year": 2025,
+    "summary": "Yemuya Weg",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Poster",
+      "Graphics",
+      "Yemuya Weg"
+    ],
+    "featured": false,
+    "order": 13,
+    "thumbnail": {
+      "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824675/15_vc721w.png",
+      "width": null,
+      "height": null
+    },
+    "media": {
+      "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png"
+    }
+  }
+]
