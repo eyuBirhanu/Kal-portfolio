@@ -7,7 +7,7 @@
   "email": "bkalkidan982@gmail.com",
   "resumeUrl": "https://drive.google.com/file/d/1oM0gZupKysCEXAYo--ogOMZhh_6tZXyp/view?usp=sharing",
   "portraitUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1790280832/lilvroekfgajyblgnxhu.jpg",
-  "ogImage": null,
+  "ogImage": "/og/default.png",
   "reel": {
     "videoUrl": null,
     "posterUrl": null,
