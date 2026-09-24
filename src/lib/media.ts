@@ -49,10 +49,28 @@ export function cld(url: string, opts: TransformOpts = {}): string {
   return `${base}/${parts.join(",")}/${cleaned}`;
 }
 
-/** A responsive srcset at sensible breakpoints. */
-export function cldSrcSet(url: string, widths = [400, 600, 900, 1200]): string {
+/**
+ * A responsive srcset at sensible breakpoints.
+ *
+ * Pass a ratio and every entry is cropped server-side to that shape with
+ * g_auto, so the browser receives an image already the right size rather than
+ * a larger one it has to crop with object-fit. Fewer bytes, and the crop is
+ * chosen by content rather than by the geometric centre.
+ */
+export function cldSrcSet(
+  url: string,
+  widths = [400, 600, 900, 1200],
+  ratio?: [number, number]
+): string {
   if (!CLOUDINARY.test(url)) return "";
-  return widths.map((w) => `${cld(url, { width: w })} ${w}w`).join(", ");
+  return widths
+    .map((w) => {
+      const opts: TransformOpts = ratio
+        ? { width: w, height: Math.round((w * ratio[1]) / ratio[0]), crop: "fill" }
+        : { width: w };
+      return `${cld(url, opts)} ${w}w`;
+    })
+    .join(", ");
 }
 
 /** A tiny blurred placeholder to show while the real image decodes. */
@@ -79,14 +97,23 @@ export const isCloudinary = (url: string) => CLOUDINARY.test(url);
 // ── YouTube ──────────────────────────────────────────────────────────────────
 
 /**
- * Build a clean embed URL. The old build appended `autoplay=1` without `mute=1`,
- * which browsers block, so autoplay silently failed.
+ * Build a clean embed URL from ANY YouTube link shape.
+ *
+ * The id is extracted and the /embed/ URL rebuilt, so projects.json can hold
+ * whatever you copied out of the address bar — a /watch?v= link, a /shorts/
+ * link, a youtu.be link — and the iframe still works. Pasting a /shorts/ URL
+ * straight into an iframe does not embed at all, and that is exactly the URL
+ * YouTube hands you when you share a Short.
+ *
+ * The old build appended `autoplay=1` without `mute=1`, which browsers block,
+ * so autoplay silently failed.
  */
 export function youTubeEmbed(
   embedUrl: string,
   opts: { autoplay?: boolean } = {}
 ): string {
-  const u = new URL(embedUrl);
+  const id = youTubeId(embedUrl);
+  const u = new URL(id ? `https://www.youtube.com/embed/${id}` : embedUrl);
   u.searchParams.set("rel", "0");
   u.searchParams.set("modestbranding", "1");
   u.searchParams.set("playsinline", "1");
@@ -97,9 +124,51 @@ export function youTubeEmbed(
   return u.toString();
 }
 
+/**
+ * The 11-character video id out of any YouTube URL shape we might store —
+ * /embed/, /watch?v= or youtu.be. Returns null for anything else.
+ */
+const YOUTUBE_ID =
+  /(?:youtube\.com\/(?:embed\/|watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/;
+
+export function youTubeId(url: string): string | null {
+  return url.match(YOUTUBE_ID)?.[1] ?? null;
+}
+
+/**
+ * YouTube already renders a still for every video, so there is no reason to
+ * upload one by hand.
+ *
+ * `maxresdefault` is the only variant that is both high resolution and a true
+ * 16:9 frame — hqdefault and sddefault are 4:3 with the video letterboxed
+ * inside, which would sit in a 16:9 card surrounded by black bars. The
+ * trade-off is that it only exists when the source was uploaded in HD; if one
+ * of yours 404s, set `thumbnail` explicitly on that project and it wins.
+ */
+export function youTubeThumbnail(
+  embedUrl: string,
+  quality: "max" | "hq" | "mq" = "max"
+): string | null {
+  const id = youTubeId(embedUrl);
+  if (!id) return null;
+  const file = { max: "maxresdefault", hq: "hqdefault", mq: "mqdefault" }[quality];
+  return `https://img.youtube.com/vi/${id}/${file}.jpg`;
+}
+
+/** Intrinsic size of a maxresdefault still — lets the grid reserve the box. */
+export const YOUTUBE_THUMB_SIZE = { width: 1280, height: 720 } as const;
+
 /** Aspect-ratio class for a video project's format. */
 export const VIDEO_ASPECT: Record<string, string> = {
   widescreen: "aspect-video",
   portrait: "aspect-[9/16]",
   square: "aspect-square",
+};
+
+/** The same ratios as numbers, for sizing a box against available height in
+ *  a style attribute — a Short in a 16:9 frame is mostly empty screen. */
+export const VIDEO_RATIO: Record<string, number> = {
+  widescreen: 16 / 9,
+  portrait: 9 / 16,
+  square: 1,
 };

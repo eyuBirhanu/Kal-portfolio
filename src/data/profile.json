@@ -119,15 +119,16 @@
   "experience": [
     {
       "id": "a2sv",
-      "role": "Graphic Designer",
+      "role": "Graphic Designer & Video Editor",
       "company": "A2SV",
       "clientId": "a2sv",
       "start": "2025",
       "end": "Present",
       "dateLabel": "2025 — Present",
-      "description": "Design the visual identity for a pan-African tech and talent community — social campaigns, event graphics and recruitment assets.",
+      "description": "Design the visual identity for a pan-African tech and talent community — social campaigns, event graphics, recruitment assets and video.",
       "tags": [
         "Brand",
+        "Video",
         "Social",
         "Events"
       ],

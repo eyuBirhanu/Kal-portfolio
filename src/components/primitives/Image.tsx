@@ -28,6 +28,7 @@ export function Image({
   targetWidth = 800,
   crop,
   fit = "cover",
+  ratio,
   className,
   priority = false,
 }: {
@@ -40,6 +41,12 @@ export function Image({
   crop?: "fill" | "limit";
   /** "cover" crops to the frame, "contain" shows the whole image inside it. */
   fit?: "cover" | "contain";
+  /**
+   * Fixes the BOX to this aspect regardless of the file's own shape, so a
+   * row of tiles is a row of tiles. Without it the box takes the image's
+   * intrinsic ratio, which is right for a gallery and wrong for a grid.
+   */
+  ratio?: [number, number];
   className?: string;
   /** Skips lazy-loading for above-the-fold media. */
   priority?: boolean;
@@ -48,10 +55,25 @@ export function Image({
   const blur = cldBlurUrl(src);
   const contain = fit === "contain";
 
+  // When we know the box shape AND we're cropping, let Cloudinary do it:
+  // c_fill with g_auto picks the salient region, so a poster keeps its
+  // subject instead of losing whatever happened to sit past the midpoint.
+  // object-cover would crop the same pixels from the centre, blindly.
+  const cropToRatio = ratio && !contain;
+  const targetHeight = cropToRatio
+    ? Math.round((targetWidth * ratio[1]) / ratio[0])
+    : undefined;
+
   return (
     <div
       className={cn("relative overflow-hidden bg-card", className)}
-      style={width && height ? { aspectRatio: `${width} / ${height}` } : undefined}
+      style={
+        ratio
+          ? { aspectRatio: `${ratio[0]} / ${ratio[1]}` }
+          : width && height
+            ? { aspectRatio: `${width} / ${height}` }
+            : undefined
+      }
     >
       {blur && (!loaded || contain) && (
         <img
@@ -67,8 +89,12 @@ export function Image({
         />
       )}
       <img
-        src={cld(src, { width: targetWidth, crop })}
-        srcSet={cldSrcSet(src)}
+        src={cld(src, {
+          width: targetWidth,
+          height: targetHeight,
+          crop: cropToRatio ? "fill" : crop,
+        })}
+        srcSet={cldSrcSet(src, undefined, cropToRatio ? ratio : undefined)}
         sizes={sizes}
         alt={alt}
         width={width ?? undefined}

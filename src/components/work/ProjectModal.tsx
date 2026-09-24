@@ -1,7 +1,7 @@
 // src/components/work/ProjectModal.tsx
 import { useCallback, useEffect, useRef } from "react";
 import type { ResolvedProject } from "../../types";
-import { cld, youTubeEmbed } from "../../lib/media";
+import { cld, youTubeEmbed, VIDEO_ASPECT, VIDEO_RATIO } from "../../lib/media";
 import { Meta } from "../primitives/Meta";
 
 /**
@@ -138,10 +138,18 @@ export function ProjectModal({
         <div className="flex min-h-0 flex-1 items-center justify-center px-3 sm:px-6">
           {project.type === "video" ? (
             <div
-              className="aspect-video w-full overflow-hidden rounded-card border border-line bg-card"
+              className={`w-full overflow-hidden rounded-card border border-line bg-card ${
+                VIDEO_ASPECT[project.media.format] ?? "aspect-video"
+              }`}
               // Cap the width by the height that's actually free, so the box
-              // shrinks to fit a short viewport without distorting.
-              style={{ maxWidth: `min(64rem, calc((100svh - ${CHROME}) * 16 / 9))` }}
+              // shrinks to fit a short viewport without distorting. The ratio
+              // comes from the project: a 9:16 Short forced into a 16:9 frame
+              // is a sliver of video in a sea of background.
+              style={{
+                maxWidth: `min(64rem, calc((100svh - ${CHROME}) * ${
+                  VIDEO_RATIO[project.media.format] ?? 16 / 9
+                }))`,
+              }}
             >
               <iframe
                 src={youTubeEmbed(project.media.embedUrl)}

@@ -11,8 +11,11 @@ import {
   ProjectSchema,
   type Client,
   type Filter,
+  type Project,
   type ResolvedProject,
+  type Thumbnail,
 } from "../types";
+import { youTubeThumbnail, YOUTUBE_THUMB_SIZE } from "./media";
 import { z } from "zod";
 
 function parseOrThrow<T>(
@@ -60,9 +63,43 @@ for (const p of rawProjects) {
   slugs.add(p.slug);
 }
 
+/**
+ * Video projects take their still from YouTube.
+ *
+ * YouTube renders one for every video, so uploading a copy by hand is work
+ * that buys nothing — and it went wrong exactly the way hand-copied data
+ * does: both video entries were pointing at the same Cloudinary file, so the
+ * two cards in the archive were the same picture.
+ *
+ * An explicit `thumbnail` in the JSON still wins, which is the escape hatch
+ * for a video whose maxresdefault doesn't exist or whose auto-still is an
+ * unflattering frame.
+ */
+function resolveThumbnail(p: Project): Thumbnail {
+  if (p.thumbnail) return p.thumbnail;
+
+  if (p.type === "video") {
+    const url = youTubeThumbnail(p.media.embedUrl);
+    if (url) return { url, ...YOUTUBE_THUMB_SIZE };
+    throw new Error(
+      `Project "${p.id}" has no thumbnail and no readable YouTube id in ` +
+        `embedUrl "${p.media.embedUrl}". Add a thumbnail, or fix the URL.`
+    );
+  }
+
+  throw new Error(
+    `Project "${p.id}" (${p.type}) needs a thumbnail. Only video projects ` +
+      `can derive one automatically.`
+  );
+}
+
 export const projects: ResolvedProject[] = rawProjects
-  .map((p) => ({ ...p, client: p.clientId ? clientsById.get(p.clientId)! : null }))
-  .sort((a, b) => a.order - b.order);
+  .map((p) => ({
+    ...p,
+    thumbnail: resolveThumbnail(p),
+    client: p.clientId ? clientsById.get(p.clientId)! : null,
+  }))
+  .sort((a, b) => a.order - b.order) as ResolvedProject[];
 
 // ── Selectors ────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,38 @@
 [
   {
+    "id": "vid-2",
+    "slug": "greed-grows-quieter",
+    "type": "video",
+    "title": "Greed Grows Quieter",
+    "clientId": "kaf-productions",
+    "date": "2025-07-04",
+    "year": 2025,
+    "summary": "A poem about greed and its consequences.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "GreedPoetry",
+      "PoetryFilm",
+      "KalkidanBirhanu",
+      "DarkPoetry"
+    ],
+    "featured": true,
+    "order": 0,
+    "subtitle": "A Darker Chapter in the Poetic Journey",
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/embed/pCV3evS6W2M?si=vxPjXMkaN1fkaKJF",
+      "format": "widescreen"
+    },
+    "caseStudy": {
+      "brief": "[What did the client need, and why?]",
+      "approach": "[What did you actually do — the decisions, not the software?]",
+      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
+    },
+    "links": [],
+    "gallery": []
+  },
+  {
     "id": "img-3",
     "slug": "adot-new-feature",
     "type": "graphic",
@@ -16,7 +49,7 @@
       "Adot"
     ],
     "featured": false,
-    "order": 0,
+    "order": 1,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Adot_New_feature_kal_i0dkle.png",
       "width": null,
@@ -43,7 +76,7 @@
       "skillBridge"
     ],
     "featured": false,
-    "order": 1,
+    "order": 2,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824695/3_ql3wzr.png",
       "width": null,
@@ -52,6 +85,34 @@
     "media": {
       "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824695/3_ql3wzr.png"
     }
+  },
+  {
+    "id": "vid-7",
+    "slug": "abiy-ahmed-documentary-intro",
+    "type": "video",
+    "title": "Abiy Ahmed Documentary",
+    "clientId": null,
+    "date": "2026-09-25",
+    "year": 2026,
+    "summary": "Intro video for a documentary on Ethiopian Prime Minister Abiy Ahmed.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Video Editing",
+      "Documentary",
+      "Intro"
+    ],
+    "featured": false,
+    "order": 3,
+    "subtitle": "Intro sequence",
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://youtu.be/f_blzcKTolg",
+      "format": "widescreen"
+    },
+    "caseStudy": null,
+    "links": [],
+    "gallery": []
   },
   {
     "id": "img-1",
@@ -70,7 +131,7 @@
       "Print"
     ],
     "featured": false,
-    "order": 2,
+    "order": 4,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824698/1_vkp5vn.png",
       "width": null,
@@ -97,7 +158,7 @@
       "Eskalate"
     ],
     "featured": false,
-    "order": 3,
+    "order": 5,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824690/Global_talent_map_u9lx1j.png",
       "width": null,
@@ -106,6 +167,33 @@
     "media": {
       "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824690/Global_talent_map_u9lx1j.png"
     }
+  },
+  {
+    "id": "vid-5",
+    "slug": "eskalate-2026",
+    "type": "video",
+    "title": "Eskalate",
+    "clientId": "eskalate",
+    "date": "2026-08-02",
+    "year": 2026,
+    "summary": "Short-form video for Eskalate.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Video Editing",
+      "Shorts",
+      "Eskalate"
+    ],
+    "featured": false,
+    "order": 6,
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/shorts/7r0mAydv45Q",
+      "format": "portrait"
+    },
+    "caseStudy": null,
+    "links": [],
+    "gallery": []
   },
   {
     "id": "img-5",
@@ -124,7 +212,7 @@
       "Akil"
     ],
     "featured": false,
-    "order": 4,
+    "order": 7,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824692/Akil_oct_gmbzqv.png",
       "width": null,
@@ -151,7 +239,7 @@
       "Hulu Store"
     ],
     "featured": false,
-    "order": 5,
+    "order": 8,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824687/Black_Circle_Icon_Business_Logo_w4oezs.png",
       "width": null,
@@ -160,6 +248,31 @@
     "media": {
       "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824687/Black_Circle_Icon_Business_Logo_w4oezs.png"
     }
+  },
+  {
+    "id": "vid-3",
+    "slug": "sleep",
+    "type": "video",
+    "title": "Sleep",
+    "clientId": null,
+    "date": "2026-01-05",
+    "year": 2026,
+    "summary": "A little description about sleep.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Video Editing"
+    ],
+    "featured": false,
+    "order": 9,
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/watch?v=UyklO1LGlcU&feature=youtu.be",
+      "format": "widescreen"
+    },
+    "caseStudy": null,
+    "links": [],
+    "gallery": []
   },
   {
     "id": "img-9",
@@ -178,7 +291,7 @@
       "Efoy"
     ],
     "featured": false,
-    "order": 6,
+    "order": 10,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824683/22_lktpy1.png",
       "width": null,
@@ -205,7 +318,7 @@
       "Grace Africa"
     ],
     "featured": false,
-    "order": 7,
+    "order": 11,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824684/1_1_dce1qs.png",
       "width": null,
@@ -214,6 +327,33 @@
     "media": {
       "fullUrl": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824684/1_1_dce1qs.png"
     }
+  },
+  {
+    "id": "vid-6",
+    "slug": "stock-market",
+    "type": "video",
+    "title": "Stock Market",
+    "clientId": null,
+    "date": "2025-07-04",
+    "year": 2025,
+    "summary": "A story told in voice alone, matched to picture — how working with the stock market helped her upgrade her skills.",
+    "role": [],
+    "tools": [],
+    "tags": [
+      "Video Editing",
+      "Storytelling",
+      "Voiceover"
+    ],
+    "featured": false,
+    "order": 12,
+    "media": {
+      "provider": "youtube",
+      "embedUrl": "https://www.youtube.com/watch?v=aYJOkTU8rGQ&feature=youtu.be",
+      "format": "widescreen"
+    },
+    "caseStudy": null,
+    "links": [],
+    "gallery": []
   },
   {
     "id": "img-12",
@@ -232,7 +372,7 @@
       "Alta Counselling"
     ],
     "featured": false,
-    "order": 8,
+    "order": 13,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824674/Copy_of_Copy_of_Blue_Modern_Social_Media_Marketing_Instagram_Post_ozugiw.jpg",
       "width": null,
@@ -259,7 +399,7 @@
       "Afrochat"
     ],
     "featured": false,
-    "order": 9,
+    "order": 14,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824672/Afrochat_Graphics_July_lyqgy1.png",
       "width": null,
@@ -270,76 +410,30 @@
     }
   },
   {
-    "id": "vid-2",
-    "slug": "greed-grows-quieter",
+    "id": "vid-4",
+    "slug": "two-dogs-two-moods",
     "type": "video",
-    "title": "Greed Grows Quieter",
-    "clientId": "kaf-productions",
-    "date": "2025-07-04",
-    "year": 2025,
-    "summary": "A poem about greed and its consequences.",
-    "role": [],
-    "tools": [],
-    "tags": [
-      "GreedPoetry",
-      "PoetryFilm",
-      "KalkidanBirhanu",
-      "DarkPoetry"
-    ],
-    "featured": true,
-    "order": 10,
-    "thumbnail": {
-      "url": "https://res.cloudinary.com/dujakhrdm/image/upload/v1768147828/VD_xaoh9f.jpg",
-      "width": null,
-      "height": null
-    },
-    "subtitle": "A Darker Chapter in the Poetic Journey",
-    "media": {
-      "provider": "youtube",
-      "embedUrl": "https://www.youtube.com/embed/pCV3evS6W2M?si=vxPjXMkaN1fkaKJF",
-      "format": "widescreen"
-    },
-    "caseStudy": {
-      "brief": "[What did the client need, and why?]",
-      "approach": "[What did you actually do — the decisions, not the software?]",
-      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
-    },
-    "links": [],
-    "gallery": []
-  },
-  {
-    "id": "vid-1",
-    "slug": "cinematic-intro",
-    "type": "video",
-    "title": "Cinematic Intro",
-    "clientId": "ahadu",
+    "title": "Two Dogs, Two Moods",
+    "clientId": null,
     "date": "2025-07-03",
     "year": 2025,
-    "summary": "A short cinematic intro created and edited to showcase video editing skills.",
+    "summary": "A contrast between two dogs — one bubbling with anger, the other staying cool and composed.",
     "role": [],
     "tools": [],
     "tags": [
-      "CinematicIntro",
-      "MotionDesign",
-      "Intro"
+      "Video Editing",
+      "Shorts",
+      "Cinematic Mood"
     ],
-    "featured": true,
-    "order": 11,
-    "thumbnail": {
-      "url": "https://res.cloudinary.com/dujakhrdm/image/upload/v1768147828/VD_xaoh9f.jpg",
-      "width": null,
-      "height": null
-    },
+    "featured": false,
+    "order": 15,
+    "subtitle": "The Calm vs. The Furious",
     "media": {
       "provider": "youtube",
-      "embedUrl": "https://www.youtube.com/embed/DeN55E3YwK8?si=DFNHBRJIgZSoTX1e",
-      "format": "widescreen"
+      "embedUrl": "https://www.youtube.com/shorts/4ojieNCfr0w",
+      "format": "portrait"
     },
-    "caseStudy": {
-      "brief": "[What did the client need, and why?]",
-      "approach": "[What did you actually do — the decisions, not the software?]",
-      "outcome": "[What happened? Views, reach, how it was used. Cut this line if there's no real number.]"
-    },
+    "caseStudy": null,
     "links": [],
     "gallery": []
   },
@@ -360,7 +454,7 @@
       "Afrochat"
     ],
     "featured": false,
-    "order": 12,
+    "order": 16,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824693/Afrochat_Graphics_July_2_knbuhu.png",
       "width": null,
@@ -387,7 +481,7 @@
       "Yemuya Weg"
     ],
     "featured": false,
-    "order": 13,
+    "order": 17,
     "thumbnail": {
       "url": "https://res.cloudinary.com/dvtivt5vf/image/upload/v1767824675/15_vc721w.png",
       "width": null,

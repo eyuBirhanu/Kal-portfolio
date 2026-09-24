@@ -17,7 +17,7 @@ import { cld, isCloudinary } from "./media";
  * environment. Vite inlines it at build time, which is when the prerenderer
  * writes these tags into the static HTML.
  */
-const FALLBACK_SITE_URL = "https://kal982.vercel.app/";
+const FALLBACK_SITE_URL = "https://kal982.vercel.app";
 
 /** Trailing slashes stripped, or every path becomes example.com//works. */
 const BASE = (import.meta.env.VITE_SITE_URL ?? FALLBACK_SITE_URL).replace(/\/+$/, "");
@@ -58,9 +58,8 @@ export function ogImage(src: string) {
  *   2. profile.reel.posterUrl — the hero's own poster frame, once a reel exists
  *   3. profile.portraitUrl  — the portrait, cropped to the card with g_auto
  *
- * All three are null in the data today, so there is nothing to show yet and
- * the image tags are omitted rather than pointed at a 404. Fill any one of
- * them in and every page picks it up.
+ * When all three are null there is nothing to show, and the image tags are
+ * omitted rather than pointed at a 404.
  */
 const heroOgSource: string | null =
   (profile.ogImage as string | null) ??
@@ -123,6 +122,12 @@ export function Seo({
   const img = image ? (image.startsWith("http") ? image : `${SITE.url}${image}`) : null;
   const alt = imageAlt ?? fullTitle;
 
+  // Only advertise dimensions for images we produced at that size: a
+  // Cloudinary crop, or the local card you build to spec. A YouTube still
+  // passes through cld() untouched at 1280x720, and claiming 1200x630 for it
+  // would make the scraper lay the card out against a size it isn't.
+  const sized = Boolean(image) && (!image!.startsWith("http") || isCloudinary(image!));
+
   return (
     <Head>
       <title>{fullTitle}</title>
@@ -147,8 +152,8 @@ export function Seo({
       {/* Without the dimensions the scraper has to fetch and measure the file
           before it can lay the card out, so the first person to share a link
           often gets a preview with an empty image well. */}
-      {img ? <meta property="og:image:width" content={String(OG_WIDTH)} /> : null}
-      {img ? <meta property="og:image:height" content={String(OG_HEIGHT)} /> : null}
+      {img && sized ? <meta property="og:image:width" content={String(OG_WIDTH)} /> : null}
+      {img && sized ? <meta property="og:image:height" content={String(OG_HEIGHT)} /> : null}
       {img ? <meta property="og:image:type" content={imageMimeType(img)} /> : null}
       {img ? <meta property="og:image:alt" content={alt} /> : null}
 

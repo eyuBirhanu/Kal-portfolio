@@ -55,6 +55,7 @@ const ExternalLinkSchema = z.object({
   url: z.string().url(),
 });
 
+export type Thumbnail = z.infer<typeof ThumbnailSchema>;
 export type GalleryItem = z.infer<typeof GalleryItemSchema>;
 export type CaseStudy = z.infer<typeof CaseStudySchema>;
 
@@ -80,7 +81,12 @@ const BaseProjectSchema = z.object({
   featured: z.boolean(),
   /** Explicit display order. Lower sorts first. */
   order: z.number().int(),
-  thumbnail: ThumbnailSchema,
+  /**
+   * Optional ONLY for video: a YouTube project derives its still from the
+   * embed id, so there is nothing to upload. Every other type must supply
+   * one, and content.ts throws by name if it doesn't.
+   */
+  thumbnail: ThumbnailSchema.optional(),
   /* All three default, so existing entries need no migration. */
   gallery: z.array(GalleryItemSchema).default([]),
   caseStudy: CaseStudySchema.nullable().default(null),
@@ -126,8 +132,22 @@ export type GraphicProject = z.infer<typeof GraphicProjectSchema>;
 export type SocialProject = z.infer<typeof SocialProjectSchema>;
 export type ProjectType = Project["type"];
 
-/** A project with its client resolved — what components actually receive. */
-export type ResolvedProject = Project & { client: Client | null };
+/**
+ * A project with its client resolved and its thumbnail guaranteed — what
+ * components actually receive. `thumbnail` is optional on the raw Project
+ * because video entries derive theirs; by the time content.ts is done, every
+ * project has one.
+ *
+ * Written distributively (`T extends unknown ? ... : never`) so the union
+ * stays a union. A plain Omit<Project, "thumbnail"> would collapse the three
+ * variants into one and `project.type === "video"` would stop narrowing
+ * `media` to the YouTube shape.
+ */
+type Resolve<T> = T extends unknown
+  ? Omit<T, "thumbnail"> & { thumbnail: Thumbnail; client: Client | null }
+  : never;
+
+export type ResolvedProject = Resolve<Project>;
 
 // ── Filters ──────────────────────────────────────────────────────────────────
 
